@@ -24,7 +24,11 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-version = '1.7.4'
+version = node[:subversion][:version]
+
+apache_conf_top_dir = "/etc/httpd"
+dav_svn_module_path = "modules/mod_dav_svn.so"
+authz_svn_module_path = "modules/mod_authz_svn.so"
 
 %w{ apr-devel apr-util-devel httpd-devel neon-devel openssl-devel sqlite-devel
     perl-ExtUtils-Embed }.each do |pkg|
@@ -42,7 +46,9 @@ bash 'install_subversion' do
     cd subversion-#{version} &&
     ./configure --with-apxs &&
     make &&
-    make install
+    make install &&
+    apxs -ean dav_svn_module #{apache_conf_top_dir}/#{dav_svn_module_path} &&
+    apxs -ean authz_svn_module #{apache_conf_top_dir}/#{authz_svn_module_path}
   EOH
   not_if { FileTest.exists?("/usr/local/bin/svn") }
 end
