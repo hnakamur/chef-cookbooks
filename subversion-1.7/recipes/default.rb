@@ -47,8 +47,8 @@ bash 'install_subversion' do
     ./configure --with-apxs &&
     make &&
     make install &&
-    apxs -ean dav_svn_module #{apache_conf_top_dir}/#{dav_svn_module_path} &&
-    apxs -ean authz_svn_module #{apache_conf_top_dir}/#{authz_svn_module_path}
+    apxs -ean dav_svn #{apache_conf_top_dir}/#{dav_svn_module_path} &&
+    apxs -ean authz_svn #{apache_conf_top_dir}/#{authz_svn_module_path}
   EOH
   not_if { FileTest.exists?("/usr/local/bin/svn") }
 end
