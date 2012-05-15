@@ -1,0 +1,12 @@
+--- app/controllers/application_controller.rb.orig      2012-04-14 17:21:00.000000000 +0900
++++ app/controllers/application_controller.rb   2012-04-18 10:09:22.596805018 +0900
+@@ -70,6 +70,9 @@
+     if session[:user_id]
+       # existing session
+       (User.active.find(session[:user_id]) rescue nil)
++    elsif (forwarded_user = request.env["REMOTE_USER"])
++      # web server authentication
++      (User.find_by_login(forwarded_user) rescue nil)
+     elsif cookies[:autologin] && Setting.autologin?
+       # auto-login feature starts a new session
+       user = User.try_to_autologin(cookies[:autologin])

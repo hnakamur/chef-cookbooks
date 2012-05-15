@@ -1,0 +1,15 @@
+RailsBaseURI /redmine
+
+<Location /redmine>
+#   Options All
+#   Options -Indexes
+
+   SSLRequireSSL
+   PassengerUser apache
+
+#   Options Includes FollowSymLinks
+#   AuthType Basic
+#   AuthName "Require Authentication"
+#   AuthUserFile /home/homepage/htpasswd
+#   Require valid-user
+</Location>
