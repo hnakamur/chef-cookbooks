@@ -38,21 +38,21 @@ bash 'install_redmine' do
      elsif cookies[:autologin] && Setting.autologin?
        # auto-login feature starts a new session
        user = User.try_to_autologin(cookies[:autologin])
---- config/environment.rb.orig  2012-04-14 17:21:06.000000000 +0900
-+++ config/environment.rb       2012-04-18 13:32:43.827484258 +0900
-@@ -57,6 +57,8 @@
-   config.gem 'rubytree', :lib => 'tree'
-   config.gem 'coderay', :version => '~>1.0.0'
-
-+  config.action_controller.session = { :key => "_redmine_session", :secret => "#{session_secret}" } 
-+
-   # Load any local configuration that is kept out of source control
-   # (e.g. gems, patches).
-   if File.exists?(File.join(File.dirname(__FILE__), 'additional_environment.rb'))
 EOF
     chown -R apache:apache #{install_dir}
   EOH
   not_if { File.exists? "#{install_dir}/config/database.yml" }
+end
+
+template "#{install_dir}/config/additional_environment.rb" do
+  source "additional_environment.rb.erb"
+  mode 0400
+  owner "apache"
+  group "apache"
+  variables(
+    :session_secret => session_secret
+  )
+  not_if { File.exists? "#{install_dir}/config/additional_environment.rb" }
 end
 
 link "/var/www/html/redmine" do
