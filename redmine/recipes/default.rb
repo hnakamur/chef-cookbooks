@@ -7,8 +7,8 @@
 
 version = node[:redmine][:version]
 session_secret = node[:redmine][:session_secret] || SecureRandom.hex(16)
-install_base_dir = '/var/www'
-install_dir = "#{install_base_dir}/redmine-#{version}"
+install_dir = node[:redmine][:install_dir]
+install_base_dir = File.dirname(install_dir)
 database_name = 'redmine'
 tarball_cache = "#{Chef::Config[:file_cache_path]}/redmine-#{version}.tar.gz"
 
