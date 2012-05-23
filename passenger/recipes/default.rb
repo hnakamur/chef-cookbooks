@@ -6,7 +6,6 @@
 #
 
 version = node[:passenger][:version]
-apache_module_dir = `apxs -q LIBEXECDIR`.chomp
 gemdir = `gem env gemdir`.chomp
 
 package 'gcc-c++'
@@ -25,7 +24,10 @@ bash "passenger_module" do
     passenger-install-apache2-module --auto &&
     apxs -ian passenger #{gemdir}/gems/passenger-#{version}/ext/apache2/mod_passenger.so
   EOH
-  not_if { File.exists? "#{apache_module_dir}/mod_passenger.so" }
+  not_if {
+    apache_module_dir = `apxs -q LIBEXECDIR`.chomp
+    File.exists? "#{apache_module_dir}/mod_passenger.so"
+  }
 end
 
 template '/etc/httpd/conf.d/passenger.conf' do
