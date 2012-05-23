@@ -1,22 +1,33 @@
 {
   "platform": "centos",
   "platform_version": "6.2",
+  "ruby": {
+    "path": "/usr/bin/ruby"
+  },
   "subversion": {
     "version": "1.7.4"
   },
   "passenger": {
-    "version": "3.0.11"
+    "version": "3.0.12"
   },
+  "webserver_type": "apache",
+  "webserver_user": "apache",
   "redmine": {
-    "version": "1.3.3",
-    "install_dir": "/var/www/redmine-1.3.3"
+    "version": "2.0.0",
+    "install_dir": "/var/www/redmine-2.0.0"
   },
   "run_list": [
-    "recipe[nginx]"/*,
+    "recipe[ntp]",
+    "recipe[mysql]",
+/*    "recipe[nginx]",
+    "recipe[unicorn]",
     "recipe[subversion-1.7]",
     "recipe[passenger]",
-    "recipe[redmine]",
+*/
+    "recipe[redmine]"
+/*,
     "recipe[redmine_importer]",
-    "recipe[redmine_notify_news_every_member]"*/
+    "recipe[redmine_notify_news_every_member]"
+*/
   ]
 }
