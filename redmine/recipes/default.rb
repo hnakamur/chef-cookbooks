@@ -108,6 +108,17 @@ if version.to_f <= 1.4
   end
 end
 
+if version.to_f >= 2.0
+  [ "#{install_dir}/tmp", "#{install_dir}/public/plugin_assets" ].each do |dir|
+    directory dir do
+      mode 0755
+      owner webserver_user
+      group webserver_user
+      action :create
+    end
+  end
+end
+
 link "/var/www/html/redmine" do
   to "#{install_dir}/public" 
 end
