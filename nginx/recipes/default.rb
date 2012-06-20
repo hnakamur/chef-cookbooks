@@ -24,14 +24,98 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-bash "add_nginx_repo" do
-  code <<-EOH
-    rpm -ivh http://nginx.org/packages/centos/6/noarch/RPMS/nginx-release-centos-6-0.el6.ngx.noarch.rpm
+version = node[:nginx][:version]
+
+bash "exclude_nginx_in_nginx" do
+  code <<-'EOH'
+    TMPFILE=/tmp/epel.repo.$$ &&
+    awk '
+/^\[epel\]$/,/^$/{
+  if (/^$/) print "exclude=node*"
+  print $0
+  next
+}
+{print $0}
+' /etc/yum.repos.d/epel.repo > $TMPFILE &&
+    cp $TMPFILE /etc/yum.repos.d/epel.repo
   EOH
-  not_if { File.exists? "/etc/yum.repos.d/nginx.repo" }
+  not_if "grep -q '^exclude=node\*' /etc/yum.repos.d/epel.repo"
 end
 
-package 'nginx'
+%w{ make gcc openssl-devel zlib-devel libxslt-devel gd-devel GeoIP-devel }.each do |pkg|
+  package pkg
+end
+
+group 'nginx' do
+  gid node[:nginx][:gid]
+end
+
+user 'nginx' do
+  uid node[:nginx][:uid]
+  gid 'nginx'
+  home '/var/lib/nginx'
+  shell '/bin/nologin'
+  comment 'Nginx web server'
+end
+
+remote_file "/usr/local/src/nginx-#{version}.tar.gz" do
+  source "http://nginx.org/download/nginx-#{version}.tar.gz"
+end
+
+bash 'install_nginx' do
+  cwd '/usr/local/src/'
+  code <<-EOH
+    tar xf nginx-#{version}.tar.gz &&
+    cd nginx-#{version} &&
+    ./configure --prefix=/usr/local/nginx-#{version} \
+      --sbin-path=/usr/sbin/nginx \
+      --conf-path=/etc/nginx/nginx.conf \
+      --error-log-path=/var/log/nginx/error.log \
+      --http-log-path=/var/log/nginx/access.log \
+      --pid-path=/var/run/nginx.pid \
+      --lock-path=/var/run/nginx.lock \
+      --http-client-body-temp-path=/var/cache/nginx/client_temp \
+      --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
+      --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
+      --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
+      --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
+      --user=nginx \
+      --group=nginx \
+      --with-file-aio \
+      --with-ipv6 \
+      --with-http_ssl_module \
+      --with-http_realip_module \
+      --with-http_addition_module \
+      --with-http_xslt_module \
+      --with-http_image_filter_module \
+      --with-http_geoip_module \
+      --with-http_sub_module \
+      --with-http_dav_module \
+      --with-http_flv_module \
+      --with-http_mp4_module \
+      --with-http_gzip_static_module \
+      --with-http_random_index_module \
+      --with-http_secure_link_module \
+      --with-http_degradation_module \
+      --with-http_stub_status_module \
+      --with-mail \
+      --with-mail_ssl_module \
+      --with-pcre-jit \
+      --with-md5-asm \
+      --with-sha1-asm \
+      --with-cc-opt='-O2 -g' &&
+    make &&
+    make install
+  EOH
+  not_if { FileTest.exists?("/usr/sbin/nginx") }
+end
+
+template '/etc/init.d/nginx' do
+  source 'nginx.erb'
+  owner 'root'
+  group 'root'
+  mode '755'
+end
 
 service "nginx" do
   supports :restart => true, :reload => true

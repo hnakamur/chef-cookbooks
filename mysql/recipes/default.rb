@@ -29,7 +29,7 @@ package 'mysql-server'
 template '/etc/my.cnf' do
   source 'my.cnf.erb'
   variables(
-    :expire_logs_days => 7
+    :expire_logs_days => node[:mysql][:expire_logs_days]
   )
 end
 
@@ -70,7 +70,7 @@ template '/usr/local/sbin/backup_mysql_db.sh' do
   owner "root"
   group "root"
   variables(
-    :error_mail_recipient => 'hnakamur@gmail.com',
+    :error_mail_recipient => node[:error_mail_recipient],
     :log_base_dir => '/var/log/mysql_backup',
     :dump_base_dir => '/data/mysql_backup',
     :host => Chef::Config[:node_name]
