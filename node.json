@@ -1,7 +1,7 @@
 {
   "platform": "centos",
   "platform_version": "6.2",
-  "error_mail_recipient": "nakamura-hiroaki@kayac.com",
+  "error_mail_recipient": "hnakamur@gmail.com",
   "ruby": {
     "path": "/usr/local/bin/ruby"
   },
