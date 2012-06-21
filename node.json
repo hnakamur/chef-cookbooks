@@ -20,6 +20,7 @@
     "version": "0.6.19"
   },
   "run_list": [
+    "recipe[mysql]",
 /*
     "recipe[pcre]",
     "recipe[nginx]",

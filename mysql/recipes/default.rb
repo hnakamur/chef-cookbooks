@@ -86,3 +86,17 @@ template '/etc/cron.d/backup_mysql_db' do
     :date_and_time_fields => '20 3 * * *'
   )
 end
+
+directory '/var/log/old/mysqld' do
+  mode 0755
+  owner "mysql"
+  group "mysql"
+  recursive true
+end
+
+template '/etc/logrotate.d/mysqld' do
+  source 'logrotate-mysqld.erb'
+  mode 0644
+  owner "root"
+  group "root"
+end
