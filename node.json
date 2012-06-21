@@ -20,7 +20,10 @@
     "version": "0.6.19"
   },
   "run_list": [
+/*
     "recipe[pcre]",
-    "recipe[nginx]"
+    "recipe[nginx]",
+*/
+    "recipe[daemontools-toaster]"
   ]
 }
