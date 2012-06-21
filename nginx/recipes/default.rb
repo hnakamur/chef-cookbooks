@@ -124,6 +124,15 @@ template '/etc/logrotate.d/nginx' do
   group "root"
 end
 
+%w{ client_temp fastcgi_temp proxy_temp scgi_temp uwsgi_temp }.each do |dir|
+  directory "/var/cache/nginx/#{dir}" do
+    owner 'nginx'
+    group 'root'
+    mode 0700
+    recursive true
+  end
+end
+
 template '/etc/init.d/nginx' do
   source 'nginx.erb'
   owner 'root'
