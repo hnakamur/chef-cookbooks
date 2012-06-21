@@ -36,3 +36,10 @@ bash 'install_daemontools-toaster' do
   EOH
   not_if 'rpm -q --quiet daemontools-toaster'
 end
+
+template '/etc/init/svscanboot.conf' do
+  source 'svscanboot.conf.erb'
+  owner 'root'
+  group 'root'
+  mode '644'
+end
