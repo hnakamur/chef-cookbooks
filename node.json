@@ -21,10 +21,9 @@
   },
   "run_list": [
     "recipe[mysql]",
-/*
     "recipe[pcre]",
     "recipe[nginx]",
-*/
-    "recipe[daemontools-toaster]"
+    "recipe[daemontools-toaster]",
+    "recipe[nodejs]"
   ]
 }

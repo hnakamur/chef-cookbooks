@@ -110,6 +110,20 @@ bash 'install_nginx' do
   not_if { FileTest.exists?("/usr/sbin/nginx") }
 end
 
+directory '/var/log/old/nginx' do
+  mode 0755
+  owner "nginx"
+  group "nginx"
+  recursive true
+end
+
+template '/etc/logrotate.d/nginx' do
+  source 'logrotate-nginx.erb'
+  mode 0644
+  owner "root"
+  group "root"
+end
+
 template '/etc/init.d/nginx' do
   source 'nginx.erb'
   owner 'root'
