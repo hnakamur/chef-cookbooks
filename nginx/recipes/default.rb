@@ -62,11 +62,20 @@ remote_file "/usr/local/src/nginx-#{version}.tar.gz" do
   source "http://nginx.org/download/nginx-#{version}.tar.gz"
 end
 
+bash 'fetch_nginx_tcp_proxy_module' do
+  cwd '/usr/local/src/'
+  code <<-EOH
+    git clone https://github.com/yaoweibin/nginx_tcp_proxy_module.git
+  EOH
+  not_if { FileTest.exists?("/usr/local/src/nginx_tcp_proxy_module") }
+end
+
 bash 'install_nginx' do
   cwd '/usr/local/src/'
   code <<-EOH
     tar xf nginx-#{version}.tar.gz &&
     cd nginx-#{version} &&
+    patch -p1 < /usr/local/src/nginx_tcp_proxy_module/tcp.patch &&
     ./configure --prefix=/usr/local/nginx-#{version} \
       --sbin-path=/usr/sbin/nginx \
       --conf-path=/etc/nginx/nginx.conf \
@@ -103,6 +112,7 @@ bash 'install_nginx' do
       --with-pcre-jit \
       --with-md5-asm \
       --with-sha1-asm \
+      --add-module=/usr/local/src/nginx_tcp_proxy_module \
       --with-cc-opt='-O2 -g' &&
     make &&
     make install
