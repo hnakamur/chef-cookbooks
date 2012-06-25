@@ -26,7 +26,7 @@
 
 version = node[:pcre][:version]
 
-%w{ make gcc }.each do |pkg|
+%w{ make gcc gcc-c++ }.each do |pkg|
   package pkg
 end
 
