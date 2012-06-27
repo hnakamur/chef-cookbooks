@@ -32,6 +32,10 @@ end
 
 remote_file "/usr/local/src/pcre-#{version}.tar.bz2" do
   source "http://downloads.sourceforge.net/project/pcre/pcre/#{version}/pcre-#{version}.tar.bz2"
+  case version
+  when "8.30"
+    checksum "c1113fd7db934e97ad8b3917d432e5b642e9eb9afd127eb797804937c965f4ac"
+  end
 end
 
 bash 'install_pcre' do

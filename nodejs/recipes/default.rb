@@ -32,6 +32,12 @@ end
 
 remote_file "/usr/local/src/node-v#{version}.tar.gz" do
   source "http://nodejs.org/dist/v#{version}/node-v#{version}.tar.gz"
+  case version
+  when "0.8.0"
+    checksum "ecafca018b5109a28537633d0433d513f68b1bae7191a1821e8eaa84ccf128ee"
+  when "0.6.19"
+    checksum "4e33292477b01dfcf50bc628d580fd5af3e5ff807490ec46472b84100fb52fbb"
+  end
 end
 
 bash 'install_nodejs' do

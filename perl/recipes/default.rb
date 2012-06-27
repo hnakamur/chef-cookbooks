@@ -32,6 +32,10 @@ end
 
 remote_file "/usr/local/src/perl-#{version}.tar.gz" do
   source "http://www.cpan.org/src/5.0/perl-#{version}.tar.gz"
+  case version
+  when "5.16.0"
+    checksum "3a33eb21f61acdca2ea70394ba8abdf7d5abbcb6a7d81ad2f572e72bd7b36504"
+  end
 end
 
 bash 'install_perl' do

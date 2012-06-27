@@ -60,6 +60,10 @@ end
 
 remote_file "/usr/local/src/nginx-#{version}.tar.gz" do
   source "http://nginx.org/download/nginx-#{version}.tar.gz"
+  case version
+  when "1.2.1"
+    checksum "994ad97cbf6f7045f95ea9d6d401aad1e95766671e402c48af85aba5235a2dd7"
+  end
 end
 
 bash 'fetch_nginx_tcp_proxy_module' do
