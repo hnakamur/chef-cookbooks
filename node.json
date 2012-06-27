@@ -28,6 +28,7 @@
     "recipe[nginx]",
     "recipe[daemontools-toaster]",
     "recipe[nodejs]",
-    "recipe[perl]"
+    "recipe[perl]",
+    "recipe[cpanm]"
   ]
 }
