@@ -17,13 +17,17 @@
     "version": "1.2.1"
   },
   "nodejs": {
-    "version": "0.6.19"
+    "version": "0.8.0"
+  },
+  "perl": {
+    "version": "5.16.0"
   },
   "run_list": [
     "recipe[mysql]",
     "recipe[pcre]",
     "recipe[nginx]",
     "recipe[daemontools-toaster]",
-    "recipe[nodejs]"
+    "recipe[nodejs]",
+    "recipe[perl]"
   ]
 }
