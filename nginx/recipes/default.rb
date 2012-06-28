@@ -66,6 +66,14 @@ remote_file "/usr/local/src/nginx-#{version}.tar.gz" do
   end
 end
 
+bash 'fetch_nginx_http_auth_digest' do
+  cwd '/usr/local/src/'
+  code <<-EOH
+    git clone https://github.com/samizdatco/nginx-http-auth-digest.git
+  EOH
+  not_if { FileTest.exists?("/usr/local/src/nginx-http-auth-digest") }
+end
+
 bash 'fetch_nginx_tcp_proxy_module' do
   cwd '/usr/local/src/'
   code <<-EOH
@@ -117,6 +125,7 @@ bash 'install_nginx' do
       --with-md5-asm \
       --with-sha1-asm \
       --add-module=/usr/local/src/nginx_tcp_proxy_module \
+      --add-module=/usr/local/src/nginx-http-auth-digest \
       --with-cc-opt='-O2 -g' &&
     make &&
     make install
