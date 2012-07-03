@@ -33,6 +33,8 @@ end
 remote_file "/usr/local/src/node-v#{version}.tar.gz" do
   source "http://nodejs.org/dist/v#{version}/node-v#{version}.tar.gz"
   case version
+  when "0.8.1"
+    checksum "0cda1325a010ce18f68501ae68e0ce97f0094e7a282c34a451f552621643a884"
   when "0.8.0"
     checksum "ecafca018b5109a28537633d0433d513f68b1bae7191a1821e8eaa84ccf128ee"
   when "0.6.19"
