@@ -23,6 +23,7 @@
     "version": "5.16.0"
   },
   "run_list": [
+    "recipe[ntp]",
     "recipe[mysql]",
     "recipe[pcre]",
     "recipe[nginx]",
