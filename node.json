@@ -20,6 +20,7 @@
     "version": "0.8.1"
   },
   "perl": {
+    "perlbrew_root": "/usr/local/perlbrew",
     "version": "5.16.0"
   },
   "run_list": [
@@ -27,9 +28,7 @@
     "recipe[mysql]",
     "recipe[pcre]",
     "recipe[nginx]",
-    "recipe[daemontools-toaster]",
     "recipe[nodejs]",
-    "recipe[perl]",
-    "recipe[cpanm]"
+    "recipe[perl]"
   ]
 }

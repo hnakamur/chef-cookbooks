@@ -24,29 +24,30 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+perlbrew_root = node[:perl][:perlbrew_root]
 version = node[:perl][:version]
 
 %w{ make gcc }.each do |pkg|
   package pkg
 end
 
-remote_file "/usr/local/src/perl-#{version}.tar.gz" do
-  source "http://www.cpan.org/src/5.0/perl-#{version}.tar.gz"
-  case version
-  when "5.16.0"
-    checksum "3a33eb21f61acdca2ea70394ba8abdf7d5abbcb6a7d81ad2f572e72bd7b36504"
-  end
+bash 'install_perlbrew' do
+  code <<-EOH
+    export PERLBREW_ROOT=#{perlbrew_root} &&
+    curl -kL http://install.perlbrew.pl | bash &&
+    echo 'source #{perlbrew_root}/etc/bashrc' >> /root/.bashrc &&
+    . /root/.bashrc &&
+    perlbrew init
+  EOH
+  not_if { FileTest.exists?("#{perlbrew_root}/bin/perlbrew") }
 end
 
 bash 'install_perl' do
-  cwd '/usr/local/src/'
   code <<-EOH
-    tar -xzf perl-#{version}.tar.gz &&
-    cd perl-#{version} &&
-    ./Configure -des -Dprefix=/usr/local &&
-    make &&
-    make test &&
-    make install
+    perlbrew install perl-#{version} --as #{version} &&
+    perlbrew switch #{version} &&
+    perlbrew install-cpanm &&
+    cpanm --self-upgrade
   EOH
-  not_if { FileTest.exists?("/usr/local/bin/perl") }
+  not_if { FileTest.exists?("#{perlbrew_root}/perls/#{version}/bin/perl") }
 end
