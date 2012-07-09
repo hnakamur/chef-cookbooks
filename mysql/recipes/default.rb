@@ -30,7 +30,7 @@ rpm_version = node[:mysql][:rpm_version]
 bash "exclude-mysql-in-Base-repo" do
   code <<-EOH
     TMPFILE=/tmp/CentOS-Base.repo.$$ &&
-    awk -f #{File.dirname(File.dirname(__FILE__))}/files/default/exclude-mysql-in-CentOS-Base.awk pkg=mysql /etc/yum.repos.d/CentOS-Base.repo > $TMPFILE &&
+    awk -f #{File.dirname(File.dirname(__FILE__))}/files/default/exclude-pkg-in-CentOS-Base.awk pkg=mysql /etc/yum.repos.d/CentOS-Base.repo > $TMPFILE &&
     cp $TMPFILE /etc/yum.repos.d/CentOS-Base.repo
   EOH
   not_if "grep -q '^exclude=.*mysql' /etc/yum.repos.d/CentOS-Base.repo"
