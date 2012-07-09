@@ -24,7 +24,112 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-package 'mysql-server'
+version = node[:mysql][:version]
+rpm_version = node[:mysql][:rpm_version]
+
+# This cookbook assumes rpm_version >= 5.5.6
+#
+# http://dev.mysql.com/doc/refman/5.5/en/linux-installation-rpm.html
+# Before MySQL 5.5.6, MySQL-shared-compat also includes the libraries for the
+# current release, so if you install it, you should not also install
+# MySQL-shared. As of 5.5.6, MySQL-shared-compat does not include the current
+# library version, so there is no conflict.
+# 
+# As of MySQL 5.5.23, the MySQL-shared-compat RPM package enables users of Red
+# Hat-privided mysql-*-5.1 RPM packages to migrate to Oracle-provided
+# MySQL-*-5.5 packages. MySQL-shared-compat replaces the Red Hat mysql-libs
+# package by replacing libmysqlclient.so files of the latter package, thus
+# satisfying dependencies of other packages on mysql-libs. This change affects
+# only users of Red Hat (or Red Hat-compatible) RPM packages. Nothing is
+# different for users of Oracle RPM packages
+
+remote_file "/usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm" do
+  source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-shared-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
+  case rpm_version
+  when "5.5.25a-1"
+    checksum "eb80d2401b48a4139e98fc9f244374f5a0bf54f46ba6e1c7be6890fb961df969"
+  end
+end
+
+remote_file "/usr/local/src/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm" do
+  source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
+  case rpm_version
+  when "5.5.25a-1"
+    checksum "7df834438f49c16e36842bde0db6da56596c6f8d2b053ea7e6f5c57367d1974d"
+  end
+end
+
+remote_file "/usr/local/src/MySQL-server-#{rpm_version}.el6.x86_64.rpm" do
+  source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-server-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
+  case rpm_version
+  when "5.5.25a-1"
+    checksum "fecbea3317e9561df99efe69e77d4b57fc75f9654a04838652c2dcfb704b4e27"
+  end
+end
+
+remote_file "/usr/local/src/MySQL-client-#{rpm_version}.el6.x86_64.rpm" do
+  source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-client-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
+  case rpm_version
+  when "5.5.25a-1"
+    checksum "cd29cad2b84c923b4091084b010cc14e81a847e26099904a572623863490f74e"
+  end
+end
+
+remote_file "/usr/local/src/MySQL-devel-#{rpm_version}.el6.x86_64.rpm" do
+  source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-devel-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
+  case rpm_version
+  when "5.5.25a-1"
+    checksum "408aea290ef725e9db2bf8aa46447ec78ee358f852376dedd80af46383797794"
+  end
+end
+
+package "MySQL-shared" do
+  source "/usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm"
+end
+
+#
+# Build and install mysql-libs-stub and uninstall mysql-libs.
+#
+# This is needed because files in mysql-libs and MySQL-server conflicts
+# and postfix depends on mysql-libs.
+#
+# See:
+# Planet MySQL - Archives - MySQL & MariaDB RPMs on Enterprise Linux 6
+# http://planet.mysql.com/entry/?id=33600
+#
+
+package "rpm-build"
+
+bash "build_mysql-libs-stub" do
+  code <<-EOH
+    rpmbuild -bb #{File.dirname(File.dirname(__FILE__))}/files/default/mysql-libs-stub.spec
+  EOH
+  not_if { File.exists? '/root/rpmbuild/RPMS/noarch/mysql-libs-stub-0.3-1.el6.noarch.rpm' }
+end
+
+package "mysql-libs-stub" do
+  source "/root/rpmbuild/RPMS/noarch/mysql-libs-stub-0.3-1.el6.noarch.rpm"
+end
+
+package "mysql-libs" do
+  action :remove
+end
+
+package "MySQL-shared-compat" do
+  source "/usr/local/src/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm"
+end
+
+package "MySQL-server" do
+  source "/usr/local/src/MySQL-server-#{rpm_version}.el6.x86_64.rpm"
+end
+
+package "MySQL-client" do
+  source "/usr/local/src/MySQL-client-#{rpm_version}.el6.x86_64.rpm"
+end
+
+package "MySQL-devel" do
+  source "/usr/local/src/MySQL-devel-#{rpm_version}.el6.x86_64.rpm"
+end
 
 template '/etc/my.cnf' do
   source 'my.cnf.erb'
@@ -33,7 +138,7 @@ template '/etc/my.cnf' do
   )
 end
 
-service 'mysqld' do
+service 'mysql' do
   supports :restart => true
   action [:enable, :start]
 end
@@ -57,7 +162,7 @@ end
 
 bash 'setup_mysql_daily_backup' do
   code <<-EOH
-    mysql -uroot <<EOF || exit 1
+    mysql -uroot <<EOF && touch /root/.chef/.setup_mysql_daily_backup_complete
 GRANT LOCK TABLES, SELECT, RELOAD ON *.* TO 'backup'@'localhost';
 EOF
   EOH

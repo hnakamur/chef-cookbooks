@@ -6,6 +6,8 @@
     "path": "/usr/local/bin/ruby"
   },
   "mysql": {
+    "version": "5.5",
+    "rpm_version": "5.5.25a-1",
     "expire_logs_days": 31
   },
   "pcre": {
