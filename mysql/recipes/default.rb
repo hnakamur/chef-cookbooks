@@ -27,6 +27,15 @@
 version = node[:mysql][:version]
 rpm_version = node[:mysql][:rpm_version]
 
+bash "exclude-mysql-in-Base-repo" do
+  code <<-EOH
+    TMPFILE=/tmp/CentOS-Base.repo.$$ &&
+    awk -f #{File.dirname(File.dirname(__FILE__))}/files/default/exclude-mysql-in-CentOS-Base.awk pkg=mysql /etc/yum.repos.d/CentOS-Base.repo > $TMPFILE &&
+    cp $TMPFILE /etc/yum.repos.d/CentOS-Base.repo
+  EOH
+  not_if "grep -q '^exclude=.*mysql' /etc/yum.repos.d/CentOS-Base.repo"
+end
+
 # This cookbook assumes rpm_version >= 5.5.6
 #
 # http://dev.mysql.com/doc/refman/5.5/en/linux-installation-rpm.html
