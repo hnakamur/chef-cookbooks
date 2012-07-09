@@ -52,19 +52,19 @@ end
 # only users of Red Hat (or Red Hat-compatible) RPM packages. Nothing is
 # different for users of Oracle RPM packages
 
-remote_file "/usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm" do
-  source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-shared-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
-  case rpm_version
-  when "5.5.25a-1"
-    checksum "eb80d2401b48a4139e98fc9f244374f5a0bf54f46ba6e1c7be6890fb961df969"
-  end
-end
-
 remote_file "/usr/local/src/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
   when "5.5.25a-1"
     checksum "7df834438f49c16e36842bde0db6da56596c6f8d2b053ea7e6f5c57367d1974d"
+  end
+end
+
+remote_file "/usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm" do
+  source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-shared-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
+  case rpm_version
+  when "5.5.25a-1"
+    checksum "eb80d2401b48a4139e98fc9f244374f5a0bf54f46ba6e1c7be6890fb961df969"
   end
 end
 
@@ -92,40 +92,34 @@ remote_file "/usr/local/src/MySQL-devel-#{rpm_version}.el6.x86_64.rpm" do
   end
 end
 
-package "MySQL-shared" do
-  source "/usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm"
+# Install MySQL-shared-compat then unisntall mysql-libs.
+#
+# # rpm -q --provides MySQL-shared-compatlibmysqlclient.so.12()(64bit)  
+# libmysqlclient.so.14()(64bit)  
+# libmysqlclient.so.14(libmysqlclient_14)(64bit)  
+# libmysqlclient.so.15()(64bit)  
+# libmysqlclient.so.15(libmysqlclient_15)(64bit)  
+# libmysqlclient.so.16()(64bit)  
+# libmysqlclient.so.16(libmysqlclient_16)(64bit)  
+# libmysqlclient_r.so.12()(64bit)  
+# libmysqlclient_r.so.14()(64bit)  
+# libmysqlclient_r.so.14(libmysqlclient_14)(64bit)  
+# libmysqlclient_r.so.15()(64bit)  
+# libmysqlclient_r.so.15(libmysqlclient_15)(64bit)  
+# libmysqlclient_r.so.16()(64bit)  
+# libmysqlclient_r.so.16(libmysqlclient_16)(64bit)  
+# mysql-libs  
+# MySQL-shared-compat = 5.5.25a-1.el6
+# MySQL-shared-compat(x86-64) = 5.5.25a-1.el6
+package "MySQL-shared-compat" do
+  source "/usr/local/src/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm"
 end
-
-#
-# Build and install mysql-libs-stub and uninstall mysql-libs.
-#
-# This is needed because files in mysql-libs and MySQL-server conflicts
-# and postfix depends on mysql-libs.
-#
-# See:
-# Planet MySQL - Archives - MySQL & MariaDB RPMs on Enterprise Linux 6
-# http://planet.mysql.com/entry/?id=33600
-#
-
-package "rpm-build"
-
-bash "build_mysql-libs-stub" do
-  code <<-EOH
-    rpmbuild -bb #{File.dirname(File.dirname(__FILE__))}/files/default/mysql-libs-stub.spec
-  EOH
-  not_if { File.exists? '/root/rpmbuild/RPMS/noarch/mysql-libs-stub-0.3-1.el6.noarch.rpm' }
-end
-
-package "mysql-libs-stub" do
-  source "/root/rpmbuild/RPMS/noarch/mysql-libs-stub-0.3-1.el6.noarch.rpm"
-end
-
 package "mysql-libs" do
   action :remove
 end
 
-package "MySQL-shared-compat" do
-  source "/usr/local/src/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm"
+package "MySQL-shared" do
+  source "/usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm"
 end
 
 package "MySQL-server" do
