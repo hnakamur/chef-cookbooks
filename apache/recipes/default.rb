@@ -33,5 +33,9 @@ template '/etc/httpd/conf/httpd.conf' do
   variables(
     :port => node[:apache][:port]
   )
-  not_if { FileTest.exists?("/etc/httpd/conf/httpd.conf") }
+  not_if { FileTest.exists?("/root/.chef/.http.conf.modified") }
+end
+
+directory "/root/.chef/.http.conf.modified" do
+  recursive true
 end
