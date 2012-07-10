@@ -163,6 +163,15 @@ template '/etc/init.d/nginx' do
   mode '755'
 end
 
+template '/etc/nginx/nginx.conf' do
+  source 'nginx.conf.erb'
+  not_if { FileTest.exists?("/root/.chef/nginx/nginx.conf.written") }
+end
+
+directory "/root/.chef/nginx/nginx.conf.written" do
+  recursive true
+end
+
 service "nginx" do
   supports :restart => true, :reload => true
   action [:enable, :start]
