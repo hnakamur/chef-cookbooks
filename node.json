@@ -31,6 +31,7 @@
     "recipe[pcre]",
     "recipe[nginx]",
     "recipe[nodejs]",
-    "recipe[perl]"
+    "recipe[perl]",
+    "recipe[php]"
   ]
 }
