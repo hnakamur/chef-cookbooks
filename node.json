@@ -16,7 +16,15 @@
   "nginx": {
     "gid": 400,
     "uid": 400,
-    "version": "1.2.1"
+    "version": "1.2.1",
+    "allowed_addresses": [
+      {"ip": "192.168.56.0/24", "comment": "my lan"},
+      {"ip": "127.0.0.0/24", "comment": "localhost"}
+    ]
+  },
+  "self_certificate": {
+    "subject": "/C=JP/ST=Kanagawa/L=Yokohama City/CN=%s",
+    "days": 365
   },
   "apache": {
     "port": 8001

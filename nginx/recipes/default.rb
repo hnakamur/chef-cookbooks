@@ -24,7 +24,10 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+require "#{File.dirname(File.dirname(__FILE__))}/files/default/text_file.rb"
+
 version = node[:nginx][:version]
+hostname = `hostname`.chomp
 
 bash "exclude_nginx_in_nginx" do
   code <<-'EOH'
@@ -156,6 +159,83 @@ end
   end
 end
 
+template '/etc/nginx/nginx.conf' do
+  source 'nginx.conf.erb'
+  variables(
+    :hostname => hostname
+  )
+  not_if { FileTest.exists?("/root/.chef/nginx/nginx.conf.written") }
+end
+directory "/root/.chef/nginx/nginx.conf.written" do
+  recursive true
+end
+
+template '/etc/nginx/allow_common_ip.conf' do
+  source 'allow_common_ip.conf.erb'
+  variables(
+    :allowed_addresses => node[:nginx][:allowed_addresses]
+  )
+  not_if { FileTest.exists?("/root/.chef/nginx/allow_common_ip.conf.written") }
+end
+directory "/root/.chef/nginx/allow_common_ip.conf.written" do
+  recursive true
+end
+
+directory "/var/www/html/_default/htdocs" do
+  owner 'nginx'
+  group 'nginx'
+  mode 0775
+  recursive true
+end
+
+cookbook_file "/var/www/html/_default/htdocs/favicon.ico" do
+  source "dummy_favicon.ico"
+  owner 'nginx'
+  group 'nginx'
+  mode 0644
+  not_if { FileTest.exists?("/var/www/html/_default/htdocs/favicon.ico") }
+end
+
+template "/var/www/html/_default/htdocs/index.html" do
+  source "index.html.erb"
+  owner 'nginx'
+  group 'nginx'
+  mode 0644
+  variables(
+    :hostname => hostname
+  )
+  not_if { FileTest.exists?("/var/www/html/_default/htdocs/index.html") }
+end
+
+directory "/etc/nginx/conf.d" do
+  owner 'nginx'
+  group 'nginx'
+  mode 0775
+  recursive true
+end
+
+bash "create_empty_htdigest_passwd_file" do
+  code <<-EOH
+    touch /var/www/html/.htdigest
+  EOH
+  not_if { FileTest.exists?("/var/www/html/.htdigest") }
+end
+
+bash "create_self_cerficiate" do
+  subject = node[:self_certificate][:subject] ?
+    node[:self_certificate][:subject] % hostname : nil
+  days = node[:self_certificate][:days]
+  key_file = "/etc/pki/tls/private/#{hostname}.key"
+  crt_file = "/etc/pki/tls/certs/#{hostname}.crt"
+  code <<-EOH
+    openssl req -new -newkey rsa:2048 -x509 -nodes -days #{days} -set_serial 0 \
+    -subj "#{subject}" -out #{crt_file} -keyout #{key_file}
+  EOH
+  not_if do
+    !subject || FileTest.exists?(key_file) || FileTest.exists?(crt_file)
+  end
+end
+
 template '/etc/init.d/nginx' do
   source 'nginx.erb'
   owner 'root'
@@ -163,16 +243,40 @@ template '/etc/init.d/nginx' do
   mode '755'
 end
 
-template '/etc/nginx/nginx.conf' do
-  source 'nginx.conf.erb'
-  not_if { FileTest.exists?("/root/.chef/nginx/nginx.conf.written") }
-end
-
-directory "/root/.chef/nginx/nginx.conf.written" do
-  recursive true
-end
-
 service "nginx" do
   supports :restart => true, :reload => true
   action [:enable, :start]
+end
+
+firewall_config_modified = false
+
+ruby_block "edit_firewall_config" do
+  file = TextFile.load "/etc/sysconfig/iptables"
+  new_lines = [
+    "-A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT",
+    "-A INPUT -m state --state NEW -m tcp -p tcp --dport 443 -j ACCEPT"
+  ]
+  block do
+    new_lines.each do |new_line|
+      unless file.lines.index new_line
+        file.lines.insert(
+          file.lines.index(
+            "-A INPUT -j REJECT --reject-with icmp-host-prohibited"
+          ),
+          new_line
+        )
+      end
+    end
+    file.save
+    firewall_config_modified = true
+  end
+  not_if do
+    new_lines.all?{|new_line| file.lines.index new_line }
+  end
+end
+
+service "iptables" do
+  supports :restart => true
+  action [:restart]
+  only_if { firewall_config_modified }
 end
