@@ -29,7 +29,7 @@
 end
 
 template '/etc/httpd/conf/httpd.conf' do
-  source 'http.conf.erb'
+  source 'httpd.conf.erb'
   variables(
     :port => node[:apache][:port]
   )
