@@ -33,4 +33,5 @@ template '/etc/httpd/conf/httpd.conf' do
   variables(
     :port => node[:apache][:port]
   )
+  not_if { FileTest.exists?("/etc/httpd/conf/httpd.conf") }
 end
