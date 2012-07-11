@@ -25,7 +25,6 @@
 #
 
 require "#{File.dirname(File.dirname(__FILE__))}/files/default/text_file.rb"
-puts "@@@@ after require"
 
 version = node[:nagios_nsca][:version]
 install_type = node[:nagios_nsca][:install_type]
@@ -55,64 +54,81 @@ bash 'build_nsca' do
   not_if { FileTest.exists?("/usr/local/src/nsca-#{version}/src/nsca") }
 end
 
-case install_type
-when "receiver"
-  template '/usr/local/nagios/etc/nsca.cfg' do
-    source 'nsca.cfg.erb'
-    variables(
-      :decryption_method => decryption_method,
-      :decryption_password => decryption_password
+#
+# install_type == "receiver"
+#
+
+template '/usr/local/nagios/etc/nsca.cfg' do
+  source 'nsca.cfg.erb'
+  variables(
+    :decryption_method => decryption_method,
+    :decryption_password => decryption_password
+  )
+  only_if { install_type == "receiver" }
+end
+
+bash 'install_nsca' do
+  code <<-EOH
+    cp -p /usr/local/src/nsca-#{version}/src/nsca \
+      /usr/local/nagios/bin/nsca &&
+    install -m 755 -o root -g root \
+      /usr/local/src/nsca-#{version}/init-script \
+      /etc/init.d/nsca
+  EOH
+  only_if do
+    install_type == "receiver" &&
+      !FileTest.exists?("/usr/local/nagios/bin/nsca")
+  end
+end
+
+service 'nsca' do
+  supports :restart => true, :reload => false
+  action [:enable, :start]
+  only_if { install_type == "receiver" }
+end
+ruby_block "nsca_force_start_nsca" do
+  block do
+    system "service nsca start"
+  end
+end
+
+ruby_block "nsca_edit_firewall_config" do
+  file = TextFile.load "/etc/sysconfig/iptables"
+  new_line = \
+    "-A INPUT -m state --state NEW -m tcp -p tcp --dport 5667 -j ACCEPT"
+  block do
+    file.lines.insert(
+      file.lines.index(
+        "-A INPUT -j REJECT --reject-with icmp-host-prohibited"
+      ),
+      new_line
     )
+    file.save
+    system "service iptables restart"
   end
+  only_if { install_type == "receiver" && !file.lines.index(new_line) }
+end
 
-  bash 'install_nsca' do
-    code <<-EOH
-      cp -p /usr/local/src/nsca-#{version}/src/nsca \
-        /usr/local/nagios/bin/nsca &&
-      install -m 755 -o root -g root \
-        /usr/local/src/nsca-#{version}/init-script \
-        /etc/init.d/nsca
-    EOH
-    not_if { FileTest.exists?("/usr/local/nagios/bin/nsca") }
-  end
+#
+# install_type == "sender"
+#
 
-puts "@@@@ before service nsca"
-  service 'nsca' do
-    action [:enable, :start]
+bash 'install_send_nsca' do
+  code <<-EOH
+    cp -p /usr/local/src/nsca-#{version}/src/send_nsca \
+      /usr/local/nagios/bin/send_nsca
+  EOH
+  only_if do
+    install_type == "sender" &&
+      !FileTest.exists?("/usr/local/nagios/bin/send_nsca")
   end
-puts "@@@@ after service nsca"
+end
 
-  firewall_config_modified = false
-
-  ruby_block "edit_firewall_config" do
-    file = TextFile.load "/etc/sysconfig/iptables"
-    new_line = \
-      "-A INPUT -m state --state NEW -m tcp -p tcp --dport 5667 -j ACCEPT"
-    block do
-puts "@@@@ line count=#{file.lines.size}"
-      file.lines.insert(
-        file.lines.index(
-          "-A INPUT -j REJECT --reject-with icmp-host-prohibited"
-        ),
-        new_line
-      )
-      file.save
-      firewall_config_modified = true
-    end
-#    not_if { file.lines.index(new_line) }
-  end
-
-  service "iptables" do
-    supports :restart => true
-    action [:restart]
-    only_if { firewall_config_modified }
-  end
-when "sender"
-  bash 'install_send_nsca' do
-    code <<-EOH
-      cp -p /usr/local/src/nsca-#{version}/src/send_nsca \
-        /usr/local/nagios/bin/send_nsca
-    EOH
-    not_if { FileTest.exists?("/usr/local/nagios/bin/send_nsca") }
-  end
+template '/usr/local/nagios/etc/send_nsca.cfg' do
+  source 'send_nsca.cfg.erb'
+  variables(
+    :decryption_method => decryption_method,
+    :decryption_password => decryption_password
+  )
+  only_if { install_type == "sender" }
 end

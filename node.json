@@ -52,6 +52,7 @@
   "nagios_nsca": {
     "version": "2.7.2",
     "install_type": "receiver",
+/*    "install_type": "sender", */
     "decryption_method": 3,
     "decryption_password": ",{37bv:R0w1P8D_a2QQ45Ptk2JN49lz\\"
   },
