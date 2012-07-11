@@ -2,6 +2,7 @@
   "platform": "centos",
   "platform_version": "6.2",
   "error_mail_recipient": "hnakamur@gmail.com",
+  "alert_mail_recipient": "hnakamur@gmail.com",
   "ruby": {
     "path": "/usr/local/bin/ruby"
   },
@@ -36,6 +37,18 @@
     "perlbrew_root": "/usr/local/perlbrew",
     "version": "5.16.0"
   },
+  "nagios": {
+    "gid": 401,
+    "uid": 401,
+    "nagcmd_gid": 402,
+    "version": "3.4.1",
+    "plugin_version": "1.4.16",
+    "date_format": "iso8601",
+    "localhost_ssh_notifications_enabled": 1,
+    "localhost_http_notifications_enabled": 1,
+    "web_interface_login": "nagiosadmin",
+    "web_interface_password": "Zc7T8DELQrq9"
+  },
   "run_list": [
     "recipe[ntp]",
     "recipe[mysql]",
@@ -44,6 +57,7 @@
     "recipe[nodejs]",
     "recipe[perl]",
     "recipe[apache]",
-    "recipe[php]"
+    "recipe[php]",
+    "recipe[nagios]"
   ]
 }
