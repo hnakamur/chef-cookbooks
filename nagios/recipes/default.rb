@@ -56,17 +56,6 @@ remote_file "/usr/local/src/nagios-plugins-#{plugin_version}.tar.gz" do
   end
 end
 
-group 'nagios' do
-  gid node[:nagios][:gid]
-end
-
-user 'nagios' do
-  uid node[:nagios][:uid]
-  gid 'nagios'
-  shell '/bin/nologin'
-  comment 'Nagios monitoring tool'
-end
-
 group 'nagcmd' do
   gid node[:nagios][:nagcmd_gid]
   members ['nagios', 'apache']
