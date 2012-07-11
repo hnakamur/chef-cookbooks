@@ -51,6 +51,16 @@
   "nagios_plugins": {
     "version": "1.4.16"
   },
+  "nagios_nrpe": {
+    "version": "2.13",
+    "allowed_hosts": "127.0.0.1",
+    "commands": {
+      "check_load":
+        "/usr/local/nagios/libexec/check_load -w 15,10,5 -c 30,25,20",
+      "check_disk":
+        "/usr/local/nagios/libexec/check_disk -w 20% -c 10% -p /"
+    }
+  },
   "run_list": [
     "recipe[ntp]",
     "recipe[mysql]",
@@ -61,6 +71,7 @@
     "recipe[apache]",
     "recipe[php]",
     "recipe[nagios]",
-    "recipe[nagios_plugins]"
+    "recipe[nagios_plugins]",
+    "recipe[nagios_nrpe]"
   ]
 }
