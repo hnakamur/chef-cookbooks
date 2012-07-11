@@ -44,7 +44,7 @@ remote_file "/usr/local/src/nagios-#{version}.tar.gz" do
   source "http://prdownloads.sourceforge.net/sourceforge/nagios/nagios-#{version}.tar.gz"
   case version
   when "3.4.1"
-    checksum "5c693f9af22410cc17d6da9c0df9bd65c47d787de3f937b5ccbda934131f8c8 "
+    checksum "a5c693f9af22410cc17d6da9c0df9bd65c47d787de3f937b5ccbda934131f8c8"
   end
 end
 
@@ -52,7 +52,7 @@ remote_file "/usr/local/src/nagios-plugins-#{plugin_version}.tar.gz" do
   source "http://prdownloads.sourceforge.net/sourceforge/nagiosplug/nagios-plugins-#{plugin_version}.tar.gz"
   case plugin_version
   when "1.4.16"
-    checksum "0caf07e0084e9b7f10fdd71cbd3ebabcd85ad78df64da360b51233b0e73b2bd"
+    checksum "b0caf07e0084e9b7f10fdd71cbd3ebabcd85ad78df64da360b51233b0e73b2bd"
   end
 end
 
