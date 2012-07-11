@@ -30,12 +30,20 @@ end
 
 template '/etc/httpd/conf/httpd.conf' do
   source 'httpd.conf.erb'
+  user "apache"
+  group "apache"
+  mode 0644
   variables(
     :port => node[:apache][:port]
   )
-  not_if { FileTest.exists?("/root/.chef/.http.conf.modified") }
+  not_if { FileTest.exists?("/root/.chef/apache/httpd.conf.modified") }
 end
 
-directory "/root/.chef/.http.conf.modified" do
+directory "/root/.chef/apache/httpd.conf.modified" do
   recursive true
+end
+
+service "httpd" do
+  supports :restart => true, :reload => true
+  action [:enable, :start]
 end
