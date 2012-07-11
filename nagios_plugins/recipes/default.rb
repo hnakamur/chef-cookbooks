@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: nagios_send_nsca
+# Cookbook Name:: nagios_plugins
 # Recipe:: default
 #
 # Copyright 2012, Hiroaki Nakamura
@@ -24,27 +24,28 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-version = node[:nagios_nsca][:version]
-encryption_method = node[:nagios_nsca][:encryption_method]
-encryption_password = node[:nagios_nsca][:encryption_password]
+version = node[:nagios_plugins][:version]
 
-bash 'install_send_nsca' do
+%w{ make gcc }.each do |pkg|
+  package pkg
+end
+
+remote_file "/usr/local/src/nagios-plugins-#{version}.tar.gz" do
+  source "http://prdownloads.sourceforge.net/sourceforge/nagiosplug/nagios-plugins-#{version}.tar.gz"
+  case version
+  when "1.4.16"
+    checksum "b0caf07e0084e9b7f10fdd71cbd3ebabcd85ad78df64da360b51233b0e73b2bd"
+  end
+end
+
+bash 'install_nagios_plugins' do
+  cwd '/usr/local/src/'
   code <<-EOH
-    mkdir -p /usr/local/nagios/bin &&
-    cp -p /usr/local/src/nsca-#{version}/src/send_nsca \
-      /usr/local/nagios/bin/send_nsca
+    tar xf nagios-plugins-#{version}.tar.gz &&
+    cd nagios-plugins-#{version} &&
+    ./configure --with-nagios-user=nagios --with-nagios-group=nagios &&
+    make &&
+    make install
   EOH
-  not_if { FileTest.exists?("/usr/local/nagios/bin/send_nsca") }
-end
-
-directory '/usr/local/nagios/etc' do
-  mode 0755
-end
-
-template '/usr/local/nagios/etc/send_nsca.cfg' do
-  source 'send_nsca.cfg.erb'
-  variables(
-    :encryption_method => encryption_method,
-    :encryption_password => encryption_password
-  )
+  not_if { FileTest.exists?("/usr/local/nagios/libexec/check_ssh") }
 end

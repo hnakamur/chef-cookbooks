@@ -42,17 +42,14 @@
     "uid": 401,
     "nagcmd_gid": 402,
     "version": "3.4.1",
-    "plugin_version": "1.4.16",
     "date_format": "iso8601",
     "localhost_ssh_notifications_enabled": 1,
     "localhost_http_notifications_enabled": 1,
     "web_interface_login": "nagiosadmin",
     "web_interface_password": "Zc7T8DELQrq9"
   },
-  "nagios_nsca": {
-    "version": "2.7.2",
-    "decryption_method": 3,
-    "decryption_password": ",{37bv:R0w1P8D_a2QQ45Ptk2JN49lz\\"
+  "nagios_plugins": {
+    "version": "1.4.16"
   },
   "run_list": [
     "recipe[ntp]",
@@ -64,6 +61,6 @@
     "recipe[apache]",
     "recipe[php]",
     "recipe[nagios]",
-    "recipe[nagios_nsca]"
+    "recipe[nagios_plugins]"
   ]
 }

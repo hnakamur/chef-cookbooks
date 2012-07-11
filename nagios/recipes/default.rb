@@ -25,7 +25,6 @@
 #
 
 version = node[:nagios][:version]
-plugin_version = node[:nagios][:plugin_version]
 
 bash "exclude-nagios-in-Base-repo" do
   code <<-EOH
@@ -48,14 +47,6 @@ remote_file "/usr/local/src/nagios-#{version}.tar.gz" do
   end
 end
 
-remote_file "/usr/local/src/nagios-plugins-#{plugin_version}.tar.gz" do
-  source "http://prdownloads.sourceforge.net/sourceforge/nagiosplug/nagios-plugins-#{plugin_version}.tar.gz"
-  case plugin_version
-  when "1.4.16"
-    checksum "b0caf07e0084e9b7f10fdd71cbd3ebabcd85ad78df64da360b51233b0e73b2bd"
-  end
-end
-
 group 'nagcmd' do
   gid node[:nagios][:nagcmd_gid]
   members ['nagios', 'apache']
@@ -75,18 +66,6 @@ bash 'install_nagios' do
     make install-webconf
   EOH
   not_if { FileTest.exists?("/etc/httpd/conf.d/nagios.conf") }
-end
-
-bash 'install_nagios_plugins' do
-  cwd '/usr/local/src/'
-  code <<-EOH
-    tar xf nagios-plugins-#{plugin_version}.tar.gz &&
-    cd nagios-plugins-#{plugin_version} &&
-    ./configure --with-nagios-user=nagios --with-nagios-group=nagios &&
-    make &&
-    make install
-  EOH
-  not_if { FileTest.exists?("/usr/local/nagios/libexec/check_ssh") }
 end
 
 bash 'create_htpasswd.users' do
