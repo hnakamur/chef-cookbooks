@@ -31,7 +31,8 @@ version = node[:glib][:version]
 end
 
 remote_file "/usr/local/src/glib-#{version}.tar.xz" do
-  source node[:glib][:tarball_url]
+  dir = version.sub(/\.\d+$/, '')
+  source "http://ftp.gnome.org/pub/gnome/sources/glib/#{dir}/glib-#{version}.tar.xz"
   case version
   when "2.32.2"
     checksum "b1764abf00bac96e0e93e29fb9715ce75f3583579acac40648e18771d43d6136"

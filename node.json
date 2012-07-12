@@ -167,9 +167,7 @@
     }
   },
   "glib": {
-    "version": "2.32.2",
-    "tarball_url":
-      "http://ftp.gnome.org/pub/gnome/sources/glib/2.32/glib-2.32.2.tar.xz"
+    "version": "2.32.2"
   },
   "rrdtool": {
     "version": "1.4.7"
