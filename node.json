@@ -192,9 +192,7 @@
     "recipe[nagios_plugins]",
     "recipe[nagios_nrpe]",
     "recipe[glib]",
-    "recipe[rrdtool]"
-/*,
+    "recipe[rrdtool]",
     "recipe[munin]"
-*/
   ]
 }
