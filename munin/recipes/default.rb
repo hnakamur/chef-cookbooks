@@ -33,6 +33,7 @@ end
 user 'munin' do
   uid node[:munin][:uid]
   gid 'munin'
+  shell '/sbin/nologin'
   comment 'Munin networked resource monitoring tool'
 end
 
