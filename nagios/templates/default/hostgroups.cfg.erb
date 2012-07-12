@@ -1,0 +1,8 @@
+<% for hostgroup in @hostgroups %>
+define hostgroup{
+        hostgroup_name  <%= hostgroup[:name] %>
+        alias           <%= hostgroup[:alias] %>
+        members         <%= hostgroup[:members] %>
+        }
+
+<% end %>

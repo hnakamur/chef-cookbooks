@@ -42,9 +42,11 @@ bash 'install_nrpe' do
     ./configure --enable-ssl &&
     make all &&
     mkdir -p /usr/local/nagios/bin/ &&
+    install -m 0755 -o nagios -g nagios \
+      /usr/local/src/nrpe-#{version}/src/check_nrpe \
+      /usr/local/nagios/bin/ &&
     install -m 0774 -o nagios -g nagios \
       /usr/local/src/nrpe-#{version}/src/nrpe \
-      /usr/local/src/nrpe-#{version}/src/check_nrpe \
       /usr/local/nagios/bin/ &&
     install -m 0755 -o root -g root \
       /usr/local/src/nrpe-#{version}/init-script \

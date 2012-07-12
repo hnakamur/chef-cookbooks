@@ -1,0 +1,9 @@
+<% for host in @hosts %>
+define host{
+        use             linux-server
+        host_name       <%= host[:name] %>
+        alias           <%= host[:alias] %>
+        address         <%= host[:address] %>
+        }
+
+<% end %>

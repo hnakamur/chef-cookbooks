@@ -1,0 +1,10 @@
+<% for service in @services %>
+define service{
+        use                             <%= service[:use] %>
+        hostgroup_name                  <%= service[:hostgroup_name] %>
+        service_description             <%= service[:service_description] %>
+        check_command                   <%= service[:check_command] %>
+        notifications_enabled           <%= service[:notifications_enabled] %>
+        }
+
+<% end %>

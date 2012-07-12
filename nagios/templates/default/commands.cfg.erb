@@ -238,3 +238,16 @@ define command{
 	}
 
 
+# 'check_nrpe' command definition
+define command{
+  command_name    check_nrpe
+  command_line    $USER1$/check_nrpe -H $HOSTADDRESS$ -c $ARG1$
+  }
+
+<% for command in @commands %>
+define command{
+  command_name    <%= command[:name] %>
+  command_line    <%= command[:line] %>
+  }
+
+<% end %>

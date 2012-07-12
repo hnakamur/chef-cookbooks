@@ -82,6 +82,80 @@ template '/usr/local/nagios/etc/contacts.cfg' do
   )
 end
 
+template '/usr/local/nagios/etc/nagios.cfg' do
+  source 'nagios.cfg.erb'
+  user 'nagios'
+  group 'nagios'
+  mode 0644
+  variables(
+    :date_format => node[:nagios][:date_format]
+  )
+end
+
+template '/usr/local/nagios/etc/objects/localhost.cfg' do
+  source 'localhost.cfg.erb'
+  user 'nagios'
+  group 'nagios'
+  mode 0644
+  variables(
+    :localhost_ssh_notifications_enabled =>
+      node[:nagios][:localhost_ssh_notifications_enabled],
+    :localhost_http_notifications_enabled =>
+      node[:nagios][:localhost_http_notifications_enabled]
+  )
+end
+
+template '/usr/local/nagios/etc/objects/templates.cfg' do
+  source 'templates.cfg.erb'
+  user 'nagios'
+  group 'nagios'
+  mode 0644
+  variables(
+    :generic_service => node[:nagios][:generic_service],
+    :local_service => node[:nagios][:local_service]
+  )
+end
+
+template '/usr/local/nagios/etc/objects/hostgroups.cfg' do
+  source 'hostgroups.cfg.erb'
+  user 'nagios'
+  group 'nagios'
+  mode 0644
+  variables(
+    :hostgroups => node[:nagios][:hostgroups]
+  )
+end
+
+template '/usr/local/nagios/etc/objects/hosts.cfg' do
+  source 'hosts.cfg.erb'
+  user 'nagios'
+  group 'nagios'
+  mode 0644
+  variables(
+    :hosts => node[:nagios][:hosts]
+  )
+end
+
+template '/usr/local/nagios/etc/objects/services.cfg' do
+  source 'services.cfg.erb'
+  user 'nagios'
+  group 'nagios'
+  mode 0644
+  variables(
+    :services => node[:nagios][:services]
+  )
+end
+
+template '/usr/local/nagios/etc/objects/commands.cfg' do
+  source 'commands.cfg.erb'
+  user 'nagios'
+  group 'nagios'
+  mode 0644
+  variables(
+    :commands => node[:nagios][:commands]
+  )
+end
+
 cookbook_file '/etc/httpd/conf.d/nagios.conf' do
   source 'apache.nagios.conf'
   not_if { FileTest.exists?('/root/.chef/nagios/apache.nagios.conf.created') }
@@ -106,27 +180,3 @@ service 'nginx' do
   supports :reload => true
   action [:reload]
 end
-
-template '/usr/local/nagios/etc/nagios.cfg' do
-  source 'nagios.cfg.erb'
-  user 'nagios'
-  group 'nagios'
-  mode 0644
-  variables(
-    :date_format => node[:nagios][:date_format]
-  )
-end
-
-template '/usr/local/nagios/etc/objects/localhost.cfg' do
-  source 'localhost.cfg.erb'
-  user 'nagios'
-  group 'nagios'
-  mode 0644
-  variables(
-    :localhost_ssh_notifications_enabled =>
-      node[:nagios][:localhost_ssh_notifications_enabled],
-    :localhost_http_notifications_enabled =>
-      node[:nagios][:localhost_http_notifications_enabled]
-  )
-end
-
