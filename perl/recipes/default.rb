@@ -31,23 +31,26 @@ version = node[:perl][:version]
   package pkg
 end
 
-bash 'install_perlbrew' do
+bash 'install_perlbrew_and_perl' do
   code <<-EOH
     export PERLBREW_ROOT=#{perlbrew_root} &&
     curl -kL http://install.perlbrew.pl | bash &&
-    echo 'source #{perlbrew_root}/etc/bashrc' >> /root/.bashrc &&
-    . /root/.bashrc &&
-    perlbrew init
-  EOH
-  not_if { FileTest.exists?("#{perlbrew_root}/bin/perlbrew") }
-end
+    cat >> /root/.bashrc <<EOF &&
 
-bash 'install_perl' do
-  code <<-EOH
+export PERLBREW_ROOT=#{perlbrew_root}
+source #{perlbrew_root}/etc/bashrc
+EOF
+    . /root/.bashrc &&
+    perlbrew init &&
     perlbrew install perl-#{version} --as #{version} &&
     perlbrew switch #{version} &&
     perlbrew install-cpanm &&
-    cpanm --self-upgrade
+    cpanm --self-upgrade &&
+    cat <<EOF
+================================================================================
+You need to run "source /root/.bashrc" to use perl installed by perlbrew.
+================================================================================
+EOF
   EOH
   not_if { FileTest.exists?("#{perlbrew_root}/perls/#{version}/bin/perl") }
 end
