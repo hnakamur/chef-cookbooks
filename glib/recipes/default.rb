@@ -26,7 +26,7 @@
 
 version = node[:glib][:version]
 
-%w{ make gcc }.each do |pkg|
+%w{ make gcc gettext-devel }.each do |pkg|
   package pkg
 end
 
