@@ -66,6 +66,7 @@ bash 'install_munin' do
   code <<-EOH
     tar xf munin-#{version}.tar.gz &&
     cd munin-#{version} &&
+    patch -p0 < #{File.dirname(File.dirname(__FILE__))}/files/default/use_cgiurl_graph_in_dynazoom.html.patch &&
     make &&
     make install &&
     chmod 777 /opt/munin/log/munin /var/opt/munin/cgi-tmp
@@ -100,13 +101,6 @@ template '/etc/opt/munin/munin.conf' do
   variables(
     :host_tree_configs => node[:munin][:host_tree_configs]
   )
-end
-
-cookbook_file '/etc/opt/munin/static/dynazoom.html' do
-  source 'dynazoom.html'
-  owner 'root'
-  group 'root'
-  mode '0644'
 end
 
 cookbook_file '/etc/httpd/conf.d/munin.conf' do
