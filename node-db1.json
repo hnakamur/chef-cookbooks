@@ -1,0 +1,53 @@
+{
+  "platform": "centos",
+  "platform_version": "6.3",
+  "error_mail_recipient": "hnakamur@gmail.com",
+  "alert_mail_recipient": "hnakamur@gmail.com",
+  "ruby": {
+    "path": "/usr/local/bin/ruby"
+  },
+  "mysql": {
+    "version": "5.5",
+    "rpm_version": "5.5.25a-1",
+    "expire_logs_days": 31
+  },
+  "nagios": {
+    "gid": 401,
+    "uid": 401,
+    "nagcmd_gid": 402
+  },
+  "nagios_plugins": {
+    "version": "1.4.16"
+  },
+  "nagios_nrpe": {
+    "version": "2.13",
+    "allowed_hosts": "127.0.0.1",
+    "commands": {
+      "check_load":
+        "/usr/local/nagios/libexec/check_load -w 15,10,5 -c 30,25,20",
+      "check_disk":
+        "/usr/local/nagios/libexec/check_disk -w 20% -c 10% -p /"
+    }
+  },
+  "glib": {
+    "version": "2.32.2"
+  },
+  "rrdtool": {
+    "version": "1.4.7"
+  },
+  "munin": {
+    "version": "2.0.2",
+    "gid": 403,
+    "uid": 403
+  },
+  "run_list": [
+    "recipe[ntp]",
+    "recipe[mysql]",
+    "recipe[nagios_user]",
+    "recipe[nagios_plugins]",
+    "recipe[nagios_nrpe]",
+    "recipe[glib]",
+    "recipe[rrdtool]",
+    "recipe[munin_node]"
+  ]
+}
