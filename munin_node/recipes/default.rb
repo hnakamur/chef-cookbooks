@@ -63,7 +63,8 @@ bash 'install_munin_node' do
     cd munin-#{version} &&
     make &&
     make install-common-prime install-node-prime install-plugins-prime &&
-    chmod 777 /opt/munin/log/munin
+    chmod 777 /opt/munin/log/munin &&
+    perl munin-node-configure --shell --families=contrib,auto | sh -x
   EOH
   not_if { FileTest.exists?("/opt/munin/sbin/munin-node") }
 end
