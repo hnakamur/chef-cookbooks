@@ -84,12 +84,41 @@ cookbook_file "/etc/cron.d/munin" do
   source "munin.cron"
   owner 'root'
   group 'root'
-  mode 0644
+  mode '0644'
   not_if { FileTest.exists?("/etc/cron.d/munin") }
 end
 
 service 'crond' do
   action [:enable, :start]
+end
+
+template '/etc/opt/munin/munin.conf' do
+  source 'munin.conf.erb'
+  owner 'root'
+  group 'root'
+  mode '0644'
+  variables(
+    :host_tree_configs => node[:munin][:host_tree_configs]
+  )
+end
+
+cookbook_file '/etc/opt/munin/static/dynazoom.html' do
+  source 'dynazoom.html'
+  owner 'root'
+  group 'root'
+  mode '0644'
+end
+
+cookbook_file '/etc/httpd/conf.d/munin.conf' do
+  source 'apache.munin.conf'
+  owner 'root'
+  group 'root'
+  mode '0644'
+end
+bash 'munin_apache_graceful_restart' do
+  code <<-EOH
+    service httpd graceful
+  EOH
 end
 
 template '/etc/nginx/https.location.d/https.munin.conf' do

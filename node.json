@@ -205,7 +205,23 @@
     "gid": 403,
     "uid": 403,
     "web_interface_login": "munin",
-    "web_interface_password": "Ci1AelEf5XzGDcsw"
+    "web_interface_password": "Ci1AelEf5XzGDcsw",
+    "host_tree_configs": [
+      "[example.com;]",
+      "[example.com;node1.example.com]",
+      "    address 127.0.0.1",
+      "    use_node_name yes",
+      "[example.com;db1.example.com]",
+      "    address 192.168.56.103",
+      "    use_node_name yes"
+    ]
+  },
+  "munin_node": {
+    "perlbrew_perl_version": "5.16.0",
+    "needs_to_open_port_in_iptables": false,
+    "cidr_configs": [
+      "cidr_allow 127.0.0.1/32"
+    ]
   },
   "run_list": [
     "recipe[ntp]",
@@ -221,6 +237,7 @@
     "recipe[nagios_nrpe]",
     "recipe[glib]",
     "recipe[rrdtool]",
-    "recipe[munin]"
+    "recipe[munin]",
+    "recipe[munin_node]"
   ]
 }

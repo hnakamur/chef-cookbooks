@@ -93,7 +93,7 @@ form.btnZoomOut.onclick = zoomOut;
 var scale = refreshImg();
 
 function refreshImg() {
-	image.src = "/cgi-bin/munin-cgi-graph/"
+	image.src = "/munin/cgi-bin/munin-cgi-graph/"
 		+ form.plugin_name.value 
 		+ "-pinpoint=" + parseInt(form.start_epoch.value) + "," + parseInt(form.stop_epoch.value)
 		+ ".png"
