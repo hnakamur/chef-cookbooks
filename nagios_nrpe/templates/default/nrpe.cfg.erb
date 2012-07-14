@@ -204,8 +204,8 @@ connection_timeout=300
 #command[check_zombie_procs]=/usr/local/nagios/libexec/check_procs -w 5 -c 10 -s Z
 #command[check_total_procs]=/usr/local/nagios/libexec/check_procs -w 150 -c 200 
 
-<% @commands.each do |key, value| %>
-command[<%= key %>]=<%= value %>
+<% @commands.each do |command| %>
+command[<%= command[:name] %>]=<%= command[:line] %>
 <% end %>
 
 # The following examples allow user-supplied arguments and can
