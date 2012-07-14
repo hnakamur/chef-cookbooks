@@ -45,6 +45,10 @@ allow ^127\.0\.0\.1$
 # cidr_allow 192.0.2.0/24
 # cidr_deny  192.0.2.42/32
 
+<% for config in @cidr_configs %>
+<%= config %>
+<% end %>
+
 # Which address to bind to;
 host *
 # host 127.0.0.1

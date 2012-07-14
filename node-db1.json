@@ -64,6 +64,11 @@
     "gid": 403,
     "uid": 403
   },
+  "munin_node": {
+    "cidr_configs": [
+      "cidr_allow 192.168.56.101/32"
+    ]
+  },
   "run_list": [
     "recipe[ntp]",
     "recipe[mysql]",

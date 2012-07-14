@@ -44,7 +44,7 @@ end
 bash 'munin_install_perl_modules' do
   code <<-EOH
     cpanm Net::Server Net::Server::Fork Time::HiRes Net::SNMP \
-      Crypt::DES Digest::SHA1 Digest::HMAC Net::SSLeay
+      Crypt::DES Digest::SHA1 Digest::HMAC Net::SSLeay Net::CIDR
   EOH
 end
 
@@ -68,14 +68,42 @@ bash 'install_munin_node' do
   not_if { FileTest.exists?("/opt/munin/sbin/munin-node") }
 end
 
-#cookbook_file "/etc/cron.d/munin" do
-#  source "munin.cron"
-#  owner 'root'
-#  group 'root'
-#  mode 0644
-#  not_if { FileTest.exists?("/etc/cron.d/munin") }
-#end
-#
-#service 'crond' do
-#  action [:enable, :start]
-#end
+template '/etc/opt/munin/munin-node.conf' do
+  source 'munin-node.conf.erb'
+  mode 0644
+  owner "root"
+  group "root"
+  variables(
+    :cidr_configs => node[:munin_node][:cidr_configs]
+  )
+end
+
+cookbook_file "/etc/init.d/munin-node" do
+  source "munin-node.rc"
+  owner 'root'
+  group 'root'
+  mode 0755
+  not_if { FileTest.exists?("/etc/init.d/munin-node") }
+end
+
+service 'munin-node' do
+  action [:enable, :start]
+end
+
+ruby_block "munin_node_edit_firewall_config" do
+  require "#{File.dirname(File.dirname(__FILE__))}/files/default/text_file.rb"
+  file = TextFile.load "/etc/sysconfig/iptables"
+  new_line = \
+    "-A INPUT -m state --state NEW -m tcp -p tcp --dport 4949 -j ACCEPT"
+  block do
+    file.lines.insert(
+      file.lines.index(
+        "-A INPUT -j REJECT --reject-with icmp-host-prohibited"
+      ),
+      new_line
+    )
+    file.save
+    system "service iptables restart"
+  end
+  not_if { file.lines.index(new_line) }
+end

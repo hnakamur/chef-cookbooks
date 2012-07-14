@@ -17,11 +17,14 @@ PROCNAME=munin-node
 mkdir -p /var/run/munin 2>/dev/null
 chown munin /var/run/munin
 
+export PERLBREW_ROOT=/usr/local/perlbrew
+source $PERLBREW_ROOT/etc/bashrc
+
 # See how we were called.
 case "$1" in
   start)
 	echo -n "Starting Munin Node: "
-	/usr/sbin/munin-node &
+	perl -wT /opt/munin/sbin/munin-node &
 	sleep 1
 	pkill -0 $PROCNAME
 	RETVAL=$?
