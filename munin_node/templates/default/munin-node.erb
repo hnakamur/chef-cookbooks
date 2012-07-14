@@ -17,14 +17,24 @@ PROCNAME=munin-node
 mkdir -p /var/run/munin 2>/dev/null
 chown munin /var/run/munin
 
-export PERLBREW_ROOT=/usr/local/perlbrew
-source $PERLBREW_ROOT/etc/bashrc
 
 # See how we were called.
 case "$1" in
   start)
 	echo -n "Starting Munin Node: "
-	perl -wT /opt/munin/sbin/munin-node &
+
+	# We use perl installed with perlbrew instead of system perl.
+	PERLBREW_ROOT=/usr/local/perlbrew
+	export PERLBREW_ROOT
+	source $PERLBREW_ROOT/etc/bashrc
+	perlbrew switch <%= @perlbrew_perl_version %>
+
+	# Without cd /opt/munin/sbin, CMD of ps is /opt/munin/sbin/munin-node.
+	# With cd /opt/munin/sbin, CMD of ps is munin-node.
+	# We would like to use 'ps -C munin-node' to check whether
+	# the munin-node process is alive from nagios.
+	cd /opt/munin/sbin
+	perl -wT munin-node &
 	sleep 1
 	pkill -0 $PROCNAME
 	RETVAL=$?

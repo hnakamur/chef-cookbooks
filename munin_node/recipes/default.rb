@@ -79,12 +79,14 @@ template '/etc/opt/munin/munin-node.conf' do
   )
 end
 
-cookbook_file "/etc/init.d/munin-node" do
-  source "munin-node.rc"
+template "/etc/init.d/munin-node" do
+  source "munin-node.erb"
   owner 'root'
   group 'root'
   mode 0755
-  not_if { FileTest.exists?("/etc/init.d/munin-node") }
+  variables(
+    :perlbrew_perl_version => node[:munin_node][:perlbrew_perl_version]
+  )
 end
 
 service 'munin-node' do
