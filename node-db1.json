@@ -66,6 +66,7 @@
   },
   "munin_node": {
     "perlbrew_perl_version": "5.16.0",
+    "needs_to_open_port_in_iptables": true,
     "cidr_configs": [
       "cidr_allow 192.168.56.101/32"
     ]

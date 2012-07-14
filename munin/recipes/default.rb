@@ -102,15 +102,3 @@ service 'nginx' do
   supports :reload => true
   action [:reload]
 end
-
-cookbook_file "/etc/init.d/munin-node" do
-  source "munin-node.rc"
-  owner 'root'
-  group 'root'
-  mode 0755
-  not_if { FileTest.exists?("/etc/init.d/munin-node") }
-end
-
-service 'munin-node' do
-  action [:enable, :start]
-end

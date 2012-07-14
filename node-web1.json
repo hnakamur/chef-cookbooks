@@ -207,6 +207,13 @@
     "web_interface_login": "munin",
     "web_interface_password": "Ci1AelEf5XzGDcsw"
   },
+  "munin_node": {
+    "perlbrew_perl_version": "5.16.0",
+    "needs_to_open_port_in_iptables": false,
+    "cidr_configs": [
+      "cidr_allow 127.0.0.1/32"
+    ]
+  },
   "run_list": [
     "recipe[ntp]",
     "recipe[mysql]",
@@ -221,6 +228,7 @@
     "recipe[nagios_nrpe]",
     "recipe[glib]",
     "recipe[rrdtool]",
-    "recipe[munin]"
+    "recipe[munin]",
+    "recipe[munin_node]"
   ]
 }
