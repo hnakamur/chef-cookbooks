@@ -25,6 +25,7 @@
 #
 
 version = node[:nagios][:version]
+install_type = node[:nagios][:install_type]
 
 bash "exclude-nagios-in-Base-repo" do
   code <<-EOH
@@ -35,148 +36,189 @@ bash "exclude-nagios-in-Base-repo" do
   not_if "grep -q '^exclude=.*nagios' /etc/yum.repos.d/epel.repo"
 end
 
-%w{ make gcc gd-devel }.each do |pkg|
-  package pkg
+group 'nagios' do
+  gid node[:nagios][:gid]
 end
 
-remote_file "/usr/local/src/nagios-#{version}.tar.gz" do
-  source "http://prdownloads.sourceforge.net/sourceforge/nagios/nagios-#{version}.tar.gz"
-  case version
-  when "3.4.1"
-    checksum "a5c693f9af22410cc17d6da9c0df9bd65c47d787de3f937b5ccbda934131f8c8"
+user 'nagios' do
+  uid node[:nagios][:uid]
+  gid 'nagios'
+  comment 'Nagios monitoring tool'
+end
+
+if install_type == 'server'
+  %w{ make gcc gd-devel }.each do |pkg|
+    package pkg
+  end
+
+  remote_file "/usr/local/src/nagios-#{version}.tar.gz" do
+    source "http://prdownloads.sourceforge.net/sourceforge/nagios/nagios-#{version}.tar.gz"
+    case version
+    when "3.4.1"
+      checksum "a5c693f9af22410cc17d6da9c0df9bd65c47d787de3f937b5ccbda934131f8c8"
+    end
+  end
+
+  group 'nagcmd' do
+    gid node[:nagios][:nagcmd_gid]
+    members ['nagios', 'apache']
+  end
+
+  bash 'install_nagios' do
+    cwd '/usr/local/src/'
+    code <<-EOH
+      tar xf nagios-#{version}.tar.gz &&
+      cd nagios &&
+      ./configure --with-command-group=nagcmd &&
+      make all &&
+      make install &&
+      make install-init &&
+      make install-config &&
+      make install-commandmode &&
+      make install-webconf
+    EOH
+    not_if { FileTest.exists?("/etc/httpd/conf.d/nagios.conf") }
+  end
+
+  bash 'create_htpasswd.users' do
+    code <<-EOH
+      htpasswd -b -c /usr/local/nagios/etc/htpasswd.users "#{node[:nagios][:web_interface_login]}" "#{node[:nagios][:web_interface_password]}" 
+    EOH
+    not_if { FileTest.exists?("/usr/local/nagios/etc/htpasswd.users") }
+  end
+
+  template '/usr/local/nagios/etc/contacts.cfg' do
+    source 'contacts.cfg.erb'
+    variables(
+      :alert_mail_recipient => node[:alert_mail_recipient]
+    )
+  end
+
+  template '/usr/local/nagios/etc/nagios.cfg' do
+    source 'nagios.cfg.erb'
+    user 'nagios'
+    group 'nagios'
+    mode 0644
+    variables(
+      :date_format => node[:nagios][:date_format]
+    )
+  end
+
+  template '/usr/local/nagios/etc/objects/localhost.cfg' do
+    source 'localhost.cfg.erb'
+    user 'nagios'
+    group 'nagios'
+    mode 0644
+    variables(
+      :localhost_ssh_notifications_enabled =>
+        node[:nagios][:localhost_ssh_notifications_enabled],
+      :localhost_http_notifications_enabled =>
+        node[:nagios][:localhost_http_notifications_enabled]
+    )
+  end
+
+  template '/usr/local/nagios/etc/objects/templates.cfg' do
+    source 'templates.cfg.erb'
+    user 'nagios'
+    group 'nagios'
+    mode 0644
+    variables(
+      :generic_service => node[:nagios][:generic_service],
+      :local_service => node[:nagios][:local_service]
+    )
+  end
+
+  template '/usr/local/nagios/etc/objects/hostgroups.cfg' do
+    source 'hostgroups.cfg.erb'
+    user 'nagios'
+    group 'nagios'
+    mode 0644
+    variables(
+      :hostgroups => node[:nagios][:hostgroups]
+    )
+  end
+
+  template '/usr/local/nagios/etc/objects/hosts.cfg' do
+    source 'hosts.cfg.erb'
+    user 'nagios'
+    group 'nagios'
+    mode 0644
+    variables(
+      :hosts => node[:nagios][:hosts]
+    )
+  end
+
+  template '/usr/local/nagios/etc/objects/services.cfg' do
+    source 'services.cfg.erb'
+    user 'nagios'
+    group 'nagios'
+    mode 0644
+    variables(
+      :services => node[:nagios][:services]
+    )
+  end
+
+  template '/usr/local/nagios/etc/objects/commands.cfg' do
+    source 'commands.cfg.erb'
+    user 'nagios'
+    group 'nagios'
+    mode 0644
+    variables(
+      :commands => node[:nagios][:commands]
+    )
+  end
+
+  cookbook_file '/etc/httpd/conf.d/nagios.conf' do
+    source 'apache.nagios.conf'
+    not_if { FileTest.exists?('/root/.chef/nagios/apache.nagios.conf.created') }
+  end
+  bash 'apache_graceful_restart' do
+    code <<-EOH
+      service httpd graceful
+    EOH
+    not_if { FileTest.exists?('/root/.chef/nagios/apache.nagios.conf.created') }
+  end
+  directory '/root/.chef/nagios/apache.nagios.conf.created' do
+    recursive true
+  end
+
+  template '/etc/nginx/https.location.d/https.nagios.conf' do
+    source 'https.nagios.conf.erb'
+    variables(
+      :backend_port => node[:apache][:port]
+    )
+  end
+  service 'nginx' do
+    supports :reload => true
+    action [:reload]
   end
 end
 
-group 'nagcmd' do
-  gid node[:nagios][:nagcmd_gid]
-  members ['nagios', 'apache']
+##############################################################################
+# nagios_plugins
+
+plugins_version = node[:nagios_plugins][:plugins_version]
+
+%w{ make gcc }.each do |pkg|
+  package pkg
 end
 
-bash 'install_nagios' do
+remote_file "/usr/local/src/nagios-plugins-#{plugins_version}.tar.gz" do
+  source "http://prdownloads.sourceforge.net/sourceforge/nagiosplug/nagios-plugins-#{plugins_version}.tar.gz"
+  case plugins_version
+  when "1.4.16"
+    checksum "b0caf07e0084e9b7f10fdd71cbd3ebabcd85ad78df64da360b51233b0e73b2bd"
+  end
+end
+
+bash 'install_nagios_plugins' do
   cwd '/usr/local/src/'
   code <<-EOH
-    tar xf nagios-#{version}.tar.gz &&
-    cd nagios &&
-    ./configure --with-command-group=nagcmd &&
-    make all &&
-    make install &&
-    make install-init &&
-    make install-config &&
-    make install-commandmode &&
-    make install-webconf
+    tar xf nagios-plugins-#{plugins_version}.tar.gz &&
+    cd nagios-plugins-#{plugins_version} &&
+    ./configure --with-nagios-user=nagios --with-nagios-group=nagios &&
+    make &&
+    make install
   EOH
-  not_if { FileTest.exists?("/etc/httpd/conf.d/nagios.conf") }
-end
-
-bash 'create_htpasswd.users' do
-  code <<-EOH
-    htpasswd -b -c /usr/local/nagios/etc/htpasswd.users "#{node[:nagios][:web_interface_login]}" "#{node[:nagios][:web_interface_password]}" 
-  EOH
-  not_if { FileTest.exists?("/usr/local/nagios/etc/htpasswd.users") }
-end
-
-template '/usr/local/nagios/etc/contacts.cfg' do
-  source 'contacts.cfg.erb'
-  variables(
-    :alert_mail_recipient => node[:alert_mail_recipient]
-  )
-end
-
-template '/usr/local/nagios/etc/nagios.cfg' do
-  source 'nagios.cfg.erb'
-  user 'nagios'
-  group 'nagios'
-  mode 0644
-  variables(
-    :date_format => node[:nagios][:date_format]
-  )
-end
-
-template '/usr/local/nagios/etc/objects/localhost.cfg' do
-  source 'localhost.cfg.erb'
-  user 'nagios'
-  group 'nagios'
-  mode 0644
-  variables(
-    :localhost_ssh_notifications_enabled =>
-      node[:nagios][:localhost_ssh_notifications_enabled],
-    :localhost_http_notifications_enabled =>
-      node[:nagios][:localhost_http_notifications_enabled]
-  )
-end
-
-template '/usr/local/nagios/etc/objects/templates.cfg' do
-  source 'templates.cfg.erb'
-  user 'nagios'
-  group 'nagios'
-  mode 0644
-  variables(
-    :generic_service => node[:nagios][:generic_service],
-    :local_service => node[:nagios][:local_service]
-  )
-end
-
-template '/usr/local/nagios/etc/objects/hostgroups.cfg' do
-  source 'hostgroups.cfg.erb'
-  user 'nagios'
-  group 'nagios'
-  mode 0644
-  variables(
-    :hostgroups => node[:nagios][:hostgroups]
-  )
-end
-
-template '/usr/local/nagios/etc/objects/hosts.cfg' do
-  source 'hosts.cfg.erb'
-  user 'nagios'
-  group 'nagios'
-  mode 0644
-  variables(
-    :hosts => node[:nagios][:hosts]
-  )
-end
-
-template '/usr/local/nagios/etc/objects/services.cfg' do
-  source 'services.cfg.erb'
-  user 'nagios'
-  group 'nagios'
-  mode 0644
-  variables(
-    :services => node[:nagios][:services]
-  )
-end
-
-template '/usr/local/nagios/etc/objects/commands.cfg' do
-  source 'commands.cfg.erb'
-  user 'nagios'
-  group 'nagios'
-  mode 0644
-  variables(
-    :commands => node[:nagios][:commands]
-  )
-end
-
-cookbook_file '/etc/httpd/conf.d/nagios.conf' do
-  source 'apache.nagios.conf'
-  not_if { FileTest.exists?('/root/.chef/nagios/apache.nagios.conf.created') }
-end
-bash 'apache_graceful_restart' do
-  code <<-EOH
-    service httpd graceful
-  EOH
-  not_if { FileTest.exists?('/root/.chef/nagios/apache.nagios.conf.created') }
-end
-directory '/root/.chef/nagios/apache.nagios.conf.created' do
-  recursive true
-end
-
-template '/etc/nginx/https.location.d/https.nagios.conf' do
-  source 'https.nagios.conf.erb'
-  variables(
-    :backend_port => node[:apache][:port]
-  )
-end
-service 'nginx' do
-  supports :reload => true
-  action [:reload]
+  not_if { FileTest.exists?("/usr/local/nagios/libexec/check_ssh") }
 end

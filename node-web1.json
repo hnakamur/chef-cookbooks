@@ -39,10 +39,12 @@
     "version": "5.16.0"
   },
   "nagios": {
+    "install_type": "client",
+    "version": "3.4.1",
+    "plugins_version": "1.4.16",
     "gid": 401,
     "uid": 401,
     "nagcmd_gid": 402,
-    "version": "3.4.1",
     "date_format": "iso8601",
     "localhost_ssh_notifications_enabled": 1,
     "localhost_http_notifications_enabled": 1,
@@ -159,9 +161,6 @@
     "web_interface_login": "nagiosadmin",
     "web_interface_password": "Zc7T8DELQrq9"
   },
-  "nagios_plugins": {
-    "version": "1.4.16"
-  },
   "nagios_nrpe": {
     "version": "2.13",
     "allowed_hosts": "192.168.56.101",
@@ -243,7 +242,6 @@
     "recipe[apache]",
     "recipe[php]",
     "recipe[nagios]",
-    "recipe[nagios_plugins]",
     "recipe[nagios_nrpe]",
     "recipe[glib]",
     "recipe[rrdtool]",
