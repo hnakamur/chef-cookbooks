@@ -54,3 +54,13 @@ end
   package pkg
 end
 
+template '/etc/php.ini' do
+  require "#{File.dirname(File.dirname(__FILE__))}/files/default/text_file.rb"
+  file = TextFile.load "/etc/sysconfig/clock"
+  timezone = /^ZONE="([^"]*)"/.match(file.lines[0]).to_a[1]
+
+  source 'php.ini.erb'
+  variables(
+    :date_timezone => timezone
+  )
+end
