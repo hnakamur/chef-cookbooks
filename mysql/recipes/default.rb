@@ -26,6 +26,7 @@
 
 version = node[:mysql][:version]
 rpm_version = node[:mysql][:rpm_version]
+install_type = node[:mysql][:install_type]
 
 bash "exclude-mysql-in-Base-repo" do
   code <<-EOH
@@ -74,6 +75,7 @@ remote_file "/usr/local/src/MySQL-server-#{rpm_version}.el6.x86_64.rpm" do
   when "5.5.25a-1"
     checksum "fecbea3317e9561df99efe69e77d4b57fc75f9654a04838652c2dcfb704b4e27"
   end
+  only_if { install_type == 'server' }
 end
 
 remote_file "/usr/local/src/MySQL-client-#{rpm_version}.el6.x86_64.rpm" do
@@ -124,6 +126,7 @@ end
 
 package "MySQL-server" do
   source "/usr/local/src/MySQL-server-#{rpm_version}.el6.x86_64.rpm"
+  only_if { install_type == 'server' }
 end
 
 package "MySQL-client" do
@@ -139,11 +142,13 @@ template '/etc/my.cnf' do
   variables(
     :expire_logs_days => node[:mysql][:expire_logs_days]
   )
+  only_if { install_type == 'server' }
 end
 
 service 'mysql' do
   supports :restart => true
   action [:enable, :start]
+  only_if { install_type == 'server' }
 end
 
 bash 'mysql_secure_installation' do
@@ -160,7 +165,10 @@ DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
 FLUSH PRIVILEGES;
 EOF
   EOH
-  not_if { File.exists? '/root/.chef/.mysql_secure_installation_complete' }
+  only_if do
+    install_type == 'server' &&
+    !File.exists?('/root/.chef/.mysql_secure_installation_complete')
+  end
 end
 
 bash 'setup_mysql_daily_backup' do
@@ -169,7 +177,10 @@ bash 'setup_mysql_daily_backup' do
 GRANT LOCK TABLES, SELECT, RELOAD ON *.* TO 'backup'@'localhost';
 EOF
   EOH
-  not_if { File.exists? '/root/.chef/.setup_mysql_daily_backup_complete' }
+  only_if do
+    install_type == 'server' &&
+    !File.exists?('/root/.chef/.setup_mysql_daily_backup_complete')
+  end
 end
 
 template '/usr/local/sbin/backup_mysql_db.sh' do
@@ -183,6 +194,7 @@ template '/usr/local/sbin/backup_mysql_db.sh' do
     :dump_base_dir => '/data/mysql_backup',
     :host => Chef::Config[:node_name]
   )
+  only_if { install_type == 'server' }
 end
 
 template '/etc/cron.d/backup_mysql_db' do
@@ -193,6 +205,7 @@ template '/etc/cron.d/backup_mysql_db' do
   variables(
     :date_and_time_fields => '20 3 * * *'
   )
+  only_if { install_type == 'server' }
 end
 
 directory '/var/log/old/mysqld' do
@@ -200,6 +213,7 @@ directory '/var/log/old/mysqld' do
   owner "mysql"
   group "mysql"
   recursive true
+  only_if { install_type == 'server' }
 end
 
 template '/etc/logrotate.d/mysqld' do
@@ -207,4 +221,5 @@ template '/etc/logrotate.d/mysqld' do
   mode 0644
   owner "root"
   group "root"
+  only_if { install_type == 'server' }
 end

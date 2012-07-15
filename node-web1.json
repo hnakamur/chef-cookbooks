@@ -7,6 +7,7 @@
     "path": "/usr/local/bin/ruby"
   },
   "mysql": {
+    "install_type": "client",
     "version": "5.5",
     "rpm_version": "5.5.25a-1",
     "expire_logs_days": 31
@@ -234,6 +235,8 @@
   },
   "run_list": [
     "recipe[ntp]",
+    "recipe[mysql]"
+/*,
     "recipe[pcre]",
     "recipe[nginx]",
     "recipe[nodejs]",
@@ -246,5 +249,6 @@
     "recipe[rrdtool]",
     "recipe[munin]",
     "recipe[munin_node]"
+*/
   ]
 }
