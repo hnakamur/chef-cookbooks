@@ -37,7 +37,7 @@ user 'munin' do
   comment 'Munin networked resource monitoring tool'
 end
 
-%w{ make gcc cronie }.each do |pkg|
+%w{ make gcc }.each do |pkg|
   package pkg
 end
 
@@ -69,6 +69,7 @@ bash 'install_munin' do
     patch -p0 < #{File.dirname(File.dirname(__FILE__))}/files/default/use_cgiurl_graph_in_dynazoom.html.patch &&
     make &&
     make install &&
+    rm -rf /opt/munin/www/docs &&
     chmod 777 /opt/munin/log/munin /var/opt/munin/cgi-tmp
   EOH
   not_if { FileTest.exists?("/opt/munin/lib/munin-asyncd") }
@@ -79,18 +80,6 @@ bash 'create_munin-htpasswd' do
     htpasswd -b -c /etc/opt/munin/munin-htpasswd "#{node[:munin][:web_interface_login]}" "#{node[:munin][:web_interface_password]}" 
   EOH
   not_if { FileTest.exists?("/etc/opt/munin/munin-htpasswd") }
-end
-
-cookbook_file "/etc/cron.d/munin" do
-  source "munin.cron"
-  owner 'root'
-  group 'root'
-  mode '0644'
-  not_if { FileTest.exists?("/etc/cron.d/munin") }
-end
-
-service 'crond' do
-  action [:enable, :start]
 end
 
 template '/etc/opt/munin/munin.conf' do
