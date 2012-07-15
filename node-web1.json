@@ -1,6 +1,6 @@
 {
   "platform": "centos",
-  "platform_version": "6.2",
+  "platform_version": "6.3",
   "error_mail_recipient": "hnakamur@gmail.com",
   "alert_mail_recipient": "hnakamur@gmail.com",
   "ruby": {
@@ -15,11 +15,11 @@
     "version": "8.30"
   },
   "nginx": {
+    "version": "1.2.2",
     "gid": 400,
     "uid": 400,
-    "version": "1.2.1",
     "allowed_addresses": [
-      {"ip": "192.168.56.0/24", "comment": "my lan"},
+      {"ip": "192.168.11.0/24", "comment": "my lan"},
       {"ip": "127.0.0.0/24", "comment": "localhost"}
     ]
   },
@@ -59,7 +59,7 @@
       {
         "name": "web-servers",
         "alias": "Web Servers",
-        "members": "node1"
+        "members": "web1,web2"
       },
       {
         "name": "db-servers",
@@ -69,14 +69,19 @@
     ],
     "hosts": [
       {
-        "name": "node1",
-        "alias": "node1.example.com",
-        "address": "192.168.56.101"
+        "name": "web1",
+        "alias": "web1.example.com",
+        "address": "192.168.11.216"
+      },
+      {
+        "name": "web2",
+        "alias": "web2.example.com",
+        "address": "192.168.11.217"
       },
       {
         "name": "db1",
         "alias": "db1.example.com",
-        "address": "192.168.56.103"
+        "address": "192.168.11.218"
       }
     ],
     "services": [
@@ -211,8 +216,11 @@
       "[example.com;node1.example.com]",
       "    address 127.0.0.1",
       "    use_node_name yes",
+      "[example.com;web2.example.com]",
+      "    address 192.168.11.217",
+      "    use_node_name yes",
       "[example.com;db1.example.com]",
-      "    address 192.168.56.103",
+      "    address 192.168.11.218",
       "    use_node_name yes"
     ]
   },
@@ -220,16 +228,15 @@
     "perlbrew_perl_version": "5.16.0",
     "needs_to_open_port_in_iptables": false,
     "cidr_configs": [
-      "cidr_allow 127.0.0.1/32"
+      "cidr_allow 127.0.0.1/32",
+      "cidr_allow 192.168.11.0/24"
     ]
   },
   "run_list": [
     "recipe[ntp]",
-    "recipe[mysql]",
     "recipe[pcre]",
     "recipe[nginx]",
     "recipe[nodejs]",
-    "recipe[perl]",
     "recipe[apache]",
     "recipe[php]",
     "recipe[nagios]",
