@@ -24,7 +24,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-%w{ httpd httpd-devel }.each do |pkg|
+%w{ httpd mod_fcgid httpd-devel }.each do |pkg|
   package pkg
 end
 
