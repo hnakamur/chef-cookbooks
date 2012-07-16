@@ -47,7 +47,7 @@ bash 'install_nrpe' do
     mkdir -p /usr/local/nagios/bin/ &&
     install -m 0755 -o nagios -g nagios \
       /usr/local/src/nrpe-#{version}/src/check_nrpe \
-      /usr/local/nagios/bin/ &&
+      /usr/local/nagios/libexec/ &&
     install -m 0774 -o nagios -g nagios \
       /usr/local/src/nrpe-#{version}/src/nrpe \
       /usr/local/nagios/bin/
