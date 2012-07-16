@@ -1,0 +1,252 @@
+{
+  "platform": "centos",
+  "platform_version": "6.3",
+  "error_mail_recipient": "hnakamur@gmail.com",
+  "alert_mail_recipient": "hnakamur@gmail.com",
+  "ruby": {
+    "path": "/usr/local/bin/ruby"
+  },
+  "mysql": {
+    "install_type": "client",
+    "version": "5.5",
+    "rpm_version": "5.5.25a-1",
+    "expire_logs_days": 31
+  },
+  "pcre": {
+    "version": "8.30"
+  },
+  "nginx": {
+    "version": "1.2.2",
+    "gid": 400,
+    "uid": 400,
+    "allowed_addresses": [
+      {"ip": "192.168.11.0/24", "comment": "my lan"},
+      {"ip": "127.0.0.0/24", "comment": "localhost"}
+    ]
+  },
+  "self_certificate": {
+    "subject": "/C=JP/ST=Kanagawa/L=Yokohama City/CN=%s",
+    "days": 365
+  },
+  "apache": {
+    "port": 8001
+  },
+  "nodejs": {
+    "version": "0.8.1"
+  },
+  "perl": {
+    "perlbrew_root": "/usr/local/perlbrew",
+    "version": "5.16.0"
+  },
+  "nagios": {
+    "install_type": "client",
+    "version": "3.4.1",
+    "plugins_version": "1.4.16",
+    "gid": 401,
+    "uid": 401,
+    "nagcmd_gid": 402,
+    "date_format": "iso8601",
+    "localhost_ssh_notifications_enabled": 1,
+    "localhost_http_notifications_enabled": 1,
+    "generic_service": {
+      "max_check_attempts": 3,
+      "normal_check_interval": 10,
+      "retry_check_interval": 2
+    },
+    "local_service": {
+      "max_check_attempts": 4,
+      "normal_check_interval": 5,
+      "retry_check_interval": 1
+    },
+    "hostgroups": [
+      {
+        "name": "web-servers",
+        "alias": "Web Servers",
+        "members": "web1,web2"
+      },
+      {
+        "name": "db-servers",
+        "alias": "DB Servers",
+        "members": "db1"
+      }
+    ],
+    "hosts": [
+      {
+        "name": "web1",
+        "alias": "web1.example.com",
+        "address": "192.168.11.216"
+      },
+      {
+        "name": "web2",
+        "alias": "web2.example.com",
+        "address": "192.168.11.217"
+      },
+      {
+        "name": "db1",
+        "alias": "db1.example.com",
+        "address": "192.168.11.218"
+      }
+    ],
+    "services": [
+      {
+        "use": "generic-service",
+        "hostgroup_name": "web-servers,db-servers",
+        "service_description": "PING",
+        "check_command": "check_ping!100.0,20%!500.0,60%",
+        "notifications_enabled": 1
+      },
+      {
+        "use": "generic-service",
+        "hostgroup_name": "web-servers,db-servers",
+        "service_description": "DISK",
+        "check_command": "check_nrpe!check_disk",
+        "notifications_enabled": 1
+      },
+      {
+        "use": "generic-service",
+        "hostgroup_name": "web-servers,db-servers",
+        "service_description": "Load Average",
+        "check_command": "check_nrpe!check_load",
+        "notifications_enabled": 1
+      },
+      {
+        "use": "generic-service",
+        "hostgroup_name": "web-servers,db-servers",
+        "service_description": "SSH",
+        "check_command": "check_ssh",
+        "notifications_enabled": 1
+      },
+      {
+        "use": "generic-service",
+        "hostgroup_name": "web-servers",
+        "service_description": "HTTP",
+        "check_command": "check_http_url!/",
+        "notifications_enabled": 1
+      },
+      {
+        "use": "generic-service",
+        "hostgroup_name": "web-servers",
+        "service_description": "apache proc",
+        "check_command": "check_nrpe!check_httpd_proc",
+        "notifications_enabled": 1
+      },
+      {
+        "use": "generic-service",
+        "hostgroup_name": "web-servers",
+        "service_description": "nginx proc",
+        "check_command": "check_nrpe!check_nginx_proc",
+        "notifications_enabled": 1
+      },
+      {
+        "use": "generic-service",
+        "hostgroup_name": "web-servers,db-servers",
+        "service_description": "munin-node proc",
+        "check_command": "check_nrpe!check_munin_node_proc",
+        "notifications_enabled": 1
+      },
+      {
+        "use": "generic-service",
+        "hostgroup_name": "db-servers",
+        "service_description": "mysqld proc",
+        "check_command": "check_nrpe!check_mysqld_proc",
+        "notifications_enabled": 1
+      }
+    ],
+    "commands": [
+      {
+        "name": "check_http_url",
+        "line": "$USER1$/check_http -H $HOSTADDRESS$ -u $ARG1$"
+      }
+    ],
+    "web_interface_login": "nagiosadmin",
+    "web_interface_password": "Zc7T8DELQrq9"
+  },
+  "nagios_nrpe": {
+    "version": "2.13",
+    "server_ip": "192.168.11.216",
+    "commands": [
+      {
+        "name": "check_user",
+        "line": "/usr/local/nagios/libexec/check_user -w 5 -c 10"
+      },
+      {
+        "name": "check_load",
+        "line": "/usr/local/nagios/libexec/check_load -w 12,8,4 -c 24,20,16"
+      },
+      {
+        "name": "check_zombie_procs",
+        "line": "/usr/local/nagios/libexec/check_procs -w 5 -c 10 -s Z"
+      },
+      {
+        "name": "check_total_procs",
+        "line": "/usr/local/nagios/libexec/check_procs -w 150 -c 200"
+      },
+      {
+        "name": "check_disk",
+        "line": "/usr/local/nagios/libexec/check_disk -w 20% -c 10% -p /"
+      },
+      {
+        "name": "check_munin_node_proc",
+        "line": "/usr/local/nagios/libexec/check_procs -c 1: -C munin-node"
+      },
+      {
+        "name": "check_nginx_proc",
+        "line": "/usr/local/nagios/libexec/check_procs -c 1: -C nginx"
+      },
+      {
+        "name": "check_httpd_proc",
+        "line": "/usr/local/nagios/libexec/check_procs -c 1: -C httpd"
+      }
+    ]
+  },
+  "glib": {
+    "version": "2.32.2"
+  },
+  "rrdtool": {
+    "version": "1.4.7"
+  },
+  "munin": {
+    "version": "2.0.2",
+    "gid": 403,
+    "uid": 403,
+    "web_interface_login": "munin",
+    "web_interface_password": "Ci1AelEf5XzGDcsw",
+    "host_tree_configs": [
+      "[example.com;]",
+      "[example.com;node1.example.com]",
+      "    address 127.0.0.1",
+      "    use_node_name yes",
+      "[example.com;web2.example.com]",
+      "    address 192.168.11.217",
+      "    use_node_name yes",
+      "[example.com;db1.example.com]",
+      "    address 192.168.11.218",
+      "    use_node_name yes"
+    ]
+  },
+  "munin_node": {
+    "perlbrew_perl_version": "5.16.0",
+    "needs_to_open_port_in_iptables": false,
+    "cidr_configs": [
+      "cidr_allow 127.0.0.1/32",
+      "cidr_allow 192.168.11.0/24"
+    ]
+  },
+  "run_list": [
+    "recipe[ntp]",
+    "recipe[mysql]",
+    "recipe[pcre]",
+    "recipe[nginx]",
+    "recipe[nodejs]",
+    "recipe[apache]",
+    "recipe[php]",
+    "recipe[nagios]",
+    "recipe[nagios_nrpe]"
+/*,
+    "recipe[glib]",
+    "recipe[rrdtool]",
+    "recipe[munin]",
+    "recipe[munin_node]"
+*/
+  ]
+}
