@@ -228,8 +228,7 @@
     "perlbrew_perl_version": "5.16.0",
     "needs_to_open_port_in_iptables": false,
     "cidr_configs": [
-      "cidr_allow 127.0.0.1/32",
-      "cidr_allow 192.168.11.0/24"
+      "cidr_allow 127.0.0.1/32"
     ]
   },
   "run_list": [
@@ -241,12 +240,10 @@
     "recipe[apache]",
     "recipe[php]",
     "recipe[nagios]",
-    "recipe[nagios_nrpe]"
-/*,
+    "recipe[nagios_nrpe]",
     "recipe[glib]",
     "recipe[rrdtool]",
     "recipe[munin]",
     "recipe[munin_node]"
-*/
   ]
 }
