@@ -69,7 +69,10 @@ if install_type == 'server'
     code <<-EOH
       tar xf nagios-#{version}.tar.gz &&
       cd nagios &&
-      ./configure --with-command-group=nagcmd &&
+      ./configure \
+        --sysconfdir=/etc/nagios \
+        --localstatedir=/var/nagios \
+        --with-command-group=nagcmd &&
       make all &&
       make install &&
       make install-init &&
@@ -80,21 +83,32 @@ if install_type == 'server'
     not_if { FileTest.exists?("/etc/httpd/conf.d/nagios.conf") }
   end
 
-  bash 'create_htpasswd.users' do
-    code <<-EOH
-      htpasswd -b -c /usr/local/nagios/etc/htpasswd.users "#{node[:nagios][:web_interface_login]}" "#{node[:nagios][:web_interface_password]}" 
-    EOH
-    not_if { FileTest.exists?("/usr/local/nagios/etc/htpasswd.users") }
+  directory '/var/nagios' do
+    owner 'nagios'
+    group 'nagcmd'
+    recursive true
   end
 
-  template '/usr/local/nagios/etc/contacts.cfg' do
+  service 'nagios' do
+    supports :reload => true
+    action [:enable, :start]
+  end
+
+  bash 'create_htpasswd.users' do
+    code <<-EOH
+      htpasswd -b -c /etc/nagios/htpasswd.users "#{node[:nagios][:web_interface_login]}" "#{node[:nagios][:web_interface_password]}" 
+    EOH
+    not_if { FileTest.exists?("/etc/nagios/htpasswd.users") }
+  end
+
+  template '/etc/nagios/contacts.cfg' do
     source 'contacts.cfg.erb'
     variables(
       :alert_mail_recipient => node[:alert_mail_recipient]
     )
   end
 
-  template '/usr/local/nagios/etc/nagios.cfg' do
+  template '/etc/nagios/nagios.cfg' do
     source 'nagios.cfg.erb'
     user 'nagios'
     group 'nagios'
@@ -104,7 +118,7 @@ if install_type == 'server'
     )
   end
 
-  template '/usr/local/nagios/etc/objects/localhost.cfg' do
+  template '/etc/nagios/objects/localhost.cfg' do
     source 'localhost.cfg.erb'
     user 'nagios'
     group 'nagios'
@@ -117,7 +131,7 @@ if install_type == 'server'
     )
   end
 
-  template '/usr/local/nagios/etc/objects/templates.cfg' do
+  template '/etc/nagios/objects/templates.cfg' do
     source 'templates.cfg.erb'
     user 'nagios'
     group 'nagios'
@@ -128,7 +142,7 @@ if install_type == 'server'
     )
   end
 
-  template '/usr/local/nagios/etc/objects/hostgroups.cfg' do
+  template '/etc/nagios/objects/hostgroups.cfg' do
     source 'hostgroups.cfg.erb'
     user 'nagios'
     group 'nagios'
@@ -138,7 +152,7 @@ if install_type == 'server'
     )
   end
 
-  template '/usr/local/nagios/etc/objects/hosts.cfg' do
+  template '/etc/nagios/objects/hosts.cfg' do
     source 'hosts.cfg.erb'
     user 'nagios'
     group 'nagios'
@@ -148,7 +162,7 @@ if install_type == 'server'
     )
   end
 
-  template '/usr/local/nagios/etc/objects/services.cfg' do
+  template '/etc/nagios/objects/services.cfg' do
     source 'services.cfg.erb'
     user 'nagios'
     group 'nagios'
@@ -158,7 +172,7 @@ if install_type == 'server'
     )
   end
 
-  template '/usr/local/nagios/etc/objects/commands.cfg' do
+  template '/etc/nagios/objects/commands.cfg' do
     source 'commands.cfg.erb'
     user 'nagios'
     group 'nagios'
@@ -197,7 +211,7 @@ end
 ##############################################################################
 # nagios_plugins
 
-plugins_version = node[:nagios_plugins][:plugins_version]
+plugins_version = node[:nagios][:plugins_version]
 
 %w{ make gcc }.each do |pkg|
   package pkg
@@ -216,7 +230,10 @@ bash 'install_nagios_plugins' do
   code <<-EOH
     tar xf nagios-plugins-#{plugins_version}.tar.gz &&
     cd nagios-plugins-#{plugins_version} &&
-    ./configure --with-nagios-user=nagios --with-nagios-group=nagios &&
+    ./configure \
+        --sysconfdir=/etc/nagios \
+        --localstatedir=/var/nagios \
+        --with-nagios-user=nagios --with-nagios-group=nagios &&
     make &&
     make install
   EOH

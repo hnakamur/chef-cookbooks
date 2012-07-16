@@ -39,7 +39,10 @@ bash 'install_nrpe' do
   code <<-EOH
     tar xf nrpe-#{version}.tar.gz &&
     cd nrpe-#{version} &&
-    ./configure --enable-ssl &&
+    ./configure \
+        --sysconfdir=/etc/nagios \
+        --localstatedir=/var/nagios \
+        --enable-ssl &&
     make all &&
     mkdir -p /usr/local/nagios/bin/ &&
     install -m 0755 -o nagios -g nagios \
@@ -47,39 +50,57 @@ bash 'install_nrpe' do
       /usr/local/nagios/bin/ &&
     install -m 0774 -o nagios -g nagios \
       /usr/local/src/nrpe-#{version}/src/nrpe \
-      /usr/local/nagios/bin/ &&
-    install -m 0755 -o root -g root \
-      /usr/local/src/nrpe-#{version}/init-script \
-      /etc/init.d/nrpe
+      /usr/local/nagios/bin/
   EOH
-  not_if { FileTest.exists?("/etc/init.d/nrpe") }
+  not_if { FileTest.exists?("/usr/local/nagios/bin/nrpe") }
 end
 
-directory '/usr/local/nagios/etc' do
+directory '/etc/nagios' do
   user 'nagios'
   group 'nagios'
-  mode 0755
+  mode '0755'
 end
 
-template '/usr/local/nagios/etc/nrpe.cfg' do
+template '/etc/nagios/nrpe.cfg' do
   source 'nrpe.cfg.erb'
   user 'nagios'
   group 'nagios'
-  mode 0644
+  mode '0644'
   variables(
-    :allowed_hosts => node[:nagios_nrpe][:allowed_hosts],
+    :allowed_hosts => node[:nagios_nrpe][:server_ip],
     :commands => node[:nagios_nrpe][:commands]
   )
 end
 
-service 'nrpe' do
-  supports :restart => true, :reload => false
-  action [:enable, :start]
+##############################################################################
+# xinetd setup
+
+package 'xinetd'
+
+template '/etc/xinetd.d/nrpe' do
+  source 'nrpe.xinetd.conf.erb'
+  user 'root'
+  group 'root'
+  mode '0600'
+  variables(
+    :server_ip => node[:nagios_nrpe][:server_ip]
+  )
 end
-bash "nagios_nrpe_force_start_nrpe" do
-  code <<-EOH
-    service nrpe start
-  EOH
+
+ruby_block "nagios_nrpe_edit_etc_services" do
+  require "#{File.dirname(File.dirname(__FILE__))}/files/default/services_file.rb"
+  file = ServicesFile.load
+  new_line = 'nrpe            5666/tcp                        # Nagios Remote Plugin Executor NRPE'
+  block do
+    file.lines.insert(file.index_for_port(5666), new_line)
+    file.save
+  end
+  not_if { file.lines.index(new_line) }
+end
+
+service 'xinetd' do
+  supports :restart => true, :reload => true
+  action [:enable, :start, :reload]
 end
 
 ruby_block "nagios_nrpe_edit_firewall_config" do
