@@ -118,6 +118,7 @@ package "MySQL-shared-compat" do
 end
 package "mysql-libs" do
   action :remove
+  only_if 'rpm -q mysql-libs > /dev/null'
 end
 
 package "MySQL-shared" do
