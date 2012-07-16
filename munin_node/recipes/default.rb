@@ -110,6 +110,6 @@ ruby_block "munin_node_edit_firewall_config" do
   end
   only_if do
     node[:munin_node][:needs_to_open_port_in_iptables] &&
-    file.lines.index(new_line)
+    !file.lines.index(new_line)
   end
 end
