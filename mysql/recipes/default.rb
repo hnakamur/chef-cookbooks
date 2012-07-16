@@ -121,6 +121,12 @@ package "mysql-libs" do
   only_if 'rpm -q mysql-libs > /dev/null'
 end
 
+# We need to uninstall mysql package to avoid conflict with MySQL-* packages.
+package "mysql" do
+  action :remove
+  only_if 'rpm -q mysql > /dev/null'
+end
+
 package "MySQL-shared" do
   source "/usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm"
 end
