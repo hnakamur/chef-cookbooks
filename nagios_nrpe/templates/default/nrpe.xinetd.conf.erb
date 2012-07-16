@@ -9,8 +9,8 @@ service nrpe
   user            = nagios
   group           = nagios
   server          = /usr/local/nagios/bin/nrpe
-  server_args     = -c /usr/local/nagios/etc/nrpe.cfg --inetd
+  server_args     = -c /etc/nagios/nrpe.cfg --inetd
   log_on_failure  += USERID
   disable         = no
-  only_from       = 127.0.0.1 <%= @server_ip %>
+  only_from       = <%= @server_ip %>
 }
