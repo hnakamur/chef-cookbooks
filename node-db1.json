@@ -7,21 +7,22 @@
     "path": "/usr/local/bin/ruby"
   },
   "mysql": {
+    "install_type": "server",
     "version": "5.5",
     "rpm_version": "5.5.25a-1",
     "expire_logs_days": 31
   },
   "nagios": {
+    "install_type": "client",
+    "version": "3.4.1",
+    "plugins_version": "1.4.16",
     "gid": 401,
     "uid": 401,
     "nagcmd_gid": 402
   },
-  "nagios_plugins": {
-    "version": "1.4.16"
-  },
   "nagios_nrpe": {
     "version": "2.13",
-    "allowed_hosts": "192.168.56.101",
+    "server_ip": "192.168.11.216",
     "commands": [
       {
         "name": "check_user",
@@ -74,11 +75,12 @@
   "run_list": [
     "recipe[ntp]",
     "recipe[mysql]",
-    "recipe[nagios_user]",
-    "recipe[nagios_plugins]",
-    "recipe[nagios_nrpe]",
+    "recipe[nagios]",
+    "recipe[nagios_nrpe]"
+/*,
     "recipe[glib]",
     "recipe[rrdtool]",
     "recipe[munin_node]"
+*/
   ]
 }
