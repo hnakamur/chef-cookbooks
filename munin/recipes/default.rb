@@ -37,52 +37,58 @@ user 'munin' do
   comment 'Munin networked resource monitoring tool'
 end
 
-%w{ make gcc }.each do |pkg|
-  package pkg
-end
-
-bash 'munin_install_perl_modules' do
-  code <<-EOH
-    cpanm Time::HiRes Storable Digest::MD5 HTML::Template Text::Balanced \
-      Params::Validate Net::SSLeay Getopt::Long \
-      File::Copy::Recursive CGI::Fast IO::Socket::INET6 Log::Log4perl \
-      Log::Dispatch Log::Dispatch::FileRotate MIME::Lite \
-      Mail::Sendmail URI FCGI
-      # These modules were not found.
-      # TimeDate IPC::Shareable Mail::Sender MailTools
-  EOH
-end
-
-remote_file "/usr/local/src/munin-#{version}.tar.gz" do
-  source "http://downloads.sourceforge.net/project/munin/stable/#{version}/munin-#{version}.tar.gz"
-  case version
-  when "2.0.2"
-    checksum "e8a5266a85cde8b89a97fb7463a56a7ac9c038035b952e36047b7d599bb9181b"
-  end
-end
+#%w{ make gcc }.each do |pkg|
+#  package pkg
+#end
+#
+#bash 'munin_install_perl_modules' do
+#  code <<-EOH
+#    cpanm Time::HiRes Storable Digest::MD5 HTML::Template Text::Balanced \
+#      Params::Validate Net::SSLeay Getopt::Long \
+#      File::Copy::Recursive CGI::Fast IO::Socket::INET6 Log::Log4perl \
+#      Log::Dispatch Log::Dispatch::FileRotate MIME::Lite \
+#      Mail::Sendmail URI FCGI
+#      # These modules were not found.
+#      # TimeDate IPC::Shareable Mail::Sender MailTools
+#  EOH
+#end
+#
+#remote_file "/usr/local/src/munin-#{version}.tar.gz" do
+#  source "http://downloads.sourceforge.net/project/munin/stable/#{version}/munin-#{version}.tar.gz"
+#  case version
+#  when "2.0.2"
+#    checksum "e8a5266a85cde8b89a97fb7463a56a7ac9c038035b952e36047b7d599bb9181b"
+#  end
+#end
 
 bash 'install_munin' do
+  file_dir = "#{File.dirname(File.dirname(__FILE__))}/files/default"
   cwd '/usr/local/src/'
   code <<-EOH
     tar xf munin-#{version}.tar.gz &&
     cd munin-#{version} &&
-    patch -p0 < #{File.dirname(File.dirname(__FILE__))}/files/default/use_cgiurl_graph_in_dynazoom.html.patch &&
+    if [ ! -f master/static/dynazoom.html.orig ]; then
+      patch -b -p0 < #{file_dir}/use_cgiurl_graph_in_dynazoom.html.patch
+    fi &&
+    if [ ! -f Makefile.config.orig ]; then
+      patch -b -p1 < #{file_dir}/Makefile.config.patch
+    fi &&
     make &&
     make install &&
-    rm -rf /opt/munin/www/docs &&
-    chmod 777 /opt/munin/log/munin /var/opt/munin/cgi-tmp
+    chmod 777 /var/log/munin /var/munin/cgi-tmp
   EOH
-  not_if { FileTest.exists?("/opt/munin/lib/munin-asyncd") }
+  not_if { FileTest.exists?("/usr/local/munin/lib/munin-asyncd") }
 end
+#    rm -rf /usr/local/munin/www/docs &&
 
 bash 'create_munin-htpasswd' do
   code <<-EOH
-    htpasswd -b -c /etc/opt/munin/munin-htpasswd "#{node[:munin][:web_interface_login]}" "#{node[:munin][:web_interface_password]}" 
+    htpasswd -b -c /etc/munin/munin-htpasswd "#{node[:munin][:web_interface_login]}" "#{node[:munin][:web_interface_password]}" 
   EOH
-  not_if { FileTest.exists?("/etc/opt/munin/munin-htpasswd") }
+  not_if { FileTest.exists?("/etc/munin/munin-htpasswd") }
 end
 
-template '/etc/opt/munin/munin.conf' do
+template '/etc/munin/munin.conf' do
   source 'munin.conf.erb'
   owner 'root'
   group 'root'

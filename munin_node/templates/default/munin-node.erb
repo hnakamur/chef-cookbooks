@@ -29,11 +29,12 @@ case "$1" in
 	source $PERLBREW_ROOT/etc/bashrc
 	perlbrew switch <%= @perlbrew_perl_version %>
 
-	# Without cd /opt/munin/sbin, CMD of ps is /opt/munin/sbin/munin-node.
-	# With cd /opt/munin/sbin, CMD of ps is munin-node.
+	# Without cd /usr/local/munin/sbin,
+	# CMD of ps is /usr/local/munin/sbin/munin-node.
+	# With cd /usr/local/munin/sbin, CMD of ps is munin-node.
 	# We would like to use 'ps -C munin-node' to check whether
 	# the munin-node process is alive from nagios.
-	cd /opt/munin/sbin
+	cd /usr/local/munin/sbin
 	perl -wT munin-node &
 	sleep 1
 	pkill -0 $PROCNAME
