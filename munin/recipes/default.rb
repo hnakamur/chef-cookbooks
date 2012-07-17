@@ -48,9 +48,10 @@ bash 'munin_install_perl_modules' do
   code <<-EOH
     cpanm Time::HiRes Storable Digest::MD5 HTML::Template Text::Balanced \
       Params::Validate Net::SSLeay Getopt::Long \
-      File::Copy::Recursive CGI::Fast IO::Socket::INET6 Log::Log4perl \
+      File::Copy::Recursive CGI::Fast Log::Log4perl \
       Log::Dispatch Log::Dispatch::FileRotate MIME::Lite \
       Mail::Sendmail URI FCGI
+      # IO::Socket::INET6
       # These modules were not found.
       # TimeDate IPC::Shareable Mail::Sender MailTools
   EOH
@@ -79,9 +80,9 @@ bash 'install_munin' do
     make &&
     make install &&
     if [ #{generation_strategy} = 'cgi' ]; then
-      rm -rf /opt/munin/www/docs
+      rm -rf /usr/local/munin/www/docs
     fi &&
-    chmod 777 /opt/munin/log/munin /var/opt/munin/cgi-tmp
+    chmod 777 /var/log/munin /var/munin/cgi-tmp
   EOH
   not_if { FileTest.exists?("/usr/local/munin/lib/munin-asyncd") }
 end
