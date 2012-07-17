@@ -26,6 +26,9 @@
 
 version = node[:munin][:version]
 
+# 'cron' or 'cgi' ('cgi' includes FastCGI)
+generation_strategy = node[:munin][:generation_strategy] || 'cron'
+
 group 'munin' do
   gid node[:munin][:gid]
 end
@@ -69,10 +72,29 @@ bash 'install_munin' do
     patch -p0 < #{File.dirname(File.dirname(__FILE__))}/files/default/use_cgiurl_graph_in_dynazoom.html.patch &&
     make &&
     make install &&
-    rm -rf /opt/munin/www/docs &&
+    if [ #{generation_strategy} = 'cgi' ]; then
+      rm -rf /opt/munin/www/docs
+    fi &&
     chmod 777 /opt/munin/log/munin /var/opt/munin/cgi-tmp
   EOH
   not_if { FileTest.exists?("/opt/munin/lib/munin-asyncd") }
+end
+
+
+if generation_strategy == 'cron'
+  package 'cronie'
+
+  cookbook_file "/etc/cron.d/munin" do
+    source "munin.cron"
+    owner 'root'
+    group 'root'
+    mode '0644'
+    not_if { FileTest.exists?("/etc/cron.d/munin") }
+  end
+
+  service 'crond' do
+    action [:enable, :start]
+  end
 end
 
 bash 'create_munin-htpasswd' do
@@ -88,12 +110,14 @@ template '/etc/opt/munin/munin.conf' do
   group 'root'
   mode '0644'
   variables(
-    :host_tree_configs => node[:munin][:host_tree_configs]
+    :host_tree_configs => node[:munin][:host_tree_configs],
+    :generation_strategy => generation_strategy
   )
 end
 
 cookbook_file '/etc/httpd/conf.d/munin.conf' do
-  source 'apache.munin.conf'
+  source (generation_strategy == 'cgi' ?
+          'dynamic.apache.munin.conf' : 'static.apache.munin.conf')
   owner 'root'
   group 'root'
   mode '0644'

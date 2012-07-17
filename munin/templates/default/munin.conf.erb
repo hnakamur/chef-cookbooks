@@ -32,7 +32,11 @@ includedir /etc/opt/munin/munin-conf.d
 # munin-graph. It has been rewritten to use the cgi code. 
 # It is single threaded *by design* now.
 #
+<% if @generation_strategy == 'cgi' %>
 graph_strategy cgi
+<% else %>
+#graph_strategy cgi
+<% end %>
 
 # munin-cgi-graph is invoked by the web server up to very many times at the
 # same time.  This is not optimal since it results in high CPU and memory
@@ -58,7 +62,11 @@ cgiurl_graph /munin/cgi-bin/munin-cgi-graph
 # by following the instructions in
 # http://munin-monitoring.org/wiki/CgiHowto2
 #
+<% if @generation_strategy == 'cgi' %>
 html_strategy cgi
+<% else %>
+#html_strategy cgi
+<% end %>
 
 # munin-update runs in parallel.
 #
