@@ -65,11 +65,17 @@ remote_file "/usr/local/src/munin-#{version}.tar.gz" do
 end
 
 bash 'install_munin' do
+  file_dir = "#{File.dirname(File.dirname(__FILE__))}/files/default"
   cwd '/usr/local/src/'
   code <<-EOH
     tar xf munin-#{version}.tar.gz &&
     cd munin-#{version} &&
-    patch -p0 < #{File.dirname(File.dirname(__FILE__))}/files/default/use_cgiurl_graph_in_dynazoom.html.patch &&
+    if [ ! -f master/static/dynazoom.html.orig ]; then
+      patch -b -p0 < #{file_dir}/use_cgiurl_graph_in_dynazoom.html.patch
+    fi &&
+    if [ ! -f Makefile.config.orig ]; then
+      patch -b -p1 < #{file_dir}/Makefile.config.patch
+    fi &&
     make &&
     make install &&
     if [ #{generation_strategy} = 'cgi' ]; then
@@ -77,8 +83,9 @@ bash 'install_munin' do
     fi &&
     chmod 777 /opt/munin/log/munin /var/opt/munin/cgi-tmp
   EOH
-  not_if { FileTest.exists?("/opt/munin/lib/munin-asyncd") }
+  not_if { FileTest.exists?("/usr/local/munin/lib/munin-asyncd") }
 end
+#    rm -rf /usr/local/munin/www/docs &&
 
 
 if generation_strategy == 'cron'
@@ -99,12 +106,12 @@ end
 
 bash 'create_munin-htpasswd' do
   code <<-EOH
-    htpasswd -b -c /etc/opt/munin/munin-htpasswd "#{node[:munin][:web_interface_login]}" "#{node[:munin][:web_interface_password]}" 
+    htpasswd -b -c /etc/munin/munin-htpasswd "#{node[:munin][:web_interface_login]}" "#{node[:munin][:web_interface_password]}" 
   EOH
-  not_if { FileTest.exists?("/etc/opt/munin/munin-htpasswd") }
+  not_if { FileTest.exists?("/etc/munin/munin-htpasswd") }
 end
 
-template '/etc/opt/munin/munin.conf' do
+template '/etc/munin/munin.conf' do
   source 'munin.conf.erb'
   owner 'root'
   group 'root'

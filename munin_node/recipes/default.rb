@@ -57,18 +57,24 @@ remote_file "/usr/local/src/munin-#{version}.tar.gz" do
 end
 
 bash 'install_munin_node' do
+  file_dir = "#{File.dirname(File.dirname(__FILE__))}/files/default"
   cwd '/usr/local/src/'
   code <<-EOH
     tar xf munin-#{version}.tar.gz &&
     cd munin-#{version} &&
+    if [ ! -f Makefile.config.orig ]; then
+      patch -b -p1 < #{file_dir}/Makefile.config.patch
+    fi &&
     make &&
     make install-common-prime install-node-prime install-plugins-prime &&
-    chmod 777 /opt/munin/log/munin
+    chmod 777 /var/log/munin &&
+    mkdir -p /usr/local/munin/www/docs &&
+    chown munin:munin /usr/local/munin/www/docs
   EOH
-  not_if { FileTest.exists?("/opt/munin/sbin/munin-node") }
+  not_if { FileTest.exists?("/usr/local/munin/sbin/munin-node") }
 end
 
-template '/etc/opt/munin/munin-node.conf' do
+template '/etc/munin/munin-node.conf' do
   source 'munin-node.conf.erb'
   mode 0644
   owner "root"
@@ -82,7 +88,6 @@ bash 'install_munin_node_plugins' do
   code <<-EOH
     perl /opt/munin/sbin/munin-node-configure --shell --families=contrib,auto | sh -x
   EOH
-  not_if { FileTest.exists?("/opt/munin/sbin/munin-node") }
 end
 
 template "/etc/init.d/munin-node" do

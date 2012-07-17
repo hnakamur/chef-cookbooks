@@ -6,22 +6,28 @@
 # defaulted to the values you see here.
 #
 # dbdir	/var/opt/munin
+dbdir /var/munin
 # htmldir /opt/munin/www/docs
+htmldir /usr/local/munin/www/docs
 # logdir /opt/munin/log/munin
+logdir /var/log/munin
 # rundir  /var/run/munin
 #
 # Where to look for the HTML templates
 # tmpldir	/etc/opt/munin/templates
+tmpldir	/etc/munin/templates
 #
 # Where to look for the static www files
 # staticdir /etc/opt/munin/static
+staticdir /etc/munin/static
 # 
 # temporary cgi files are here. note that it has to be writable by the cgi user (usually nobody or httpd).
 # cgitmpdir /var/opt/munin/cgi-tmp
+cgitmpdir /var/munin/cgi-tmp
 
 # (Exactly one) directory to include all files from.
 #
-includedir /etc/opt/munin/munin-conf.d
+includedir /etc/munin/munin-conf.d
 
 # Make graphs show values per minute instead of per second
 #graph_period minute
