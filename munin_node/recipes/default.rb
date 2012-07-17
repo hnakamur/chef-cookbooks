@@ -63,8 +63,7 @@ bash 'install_munin_node' do
     cd munin-#{version} &&
     make &&
     make install-common-prime install-node-prime install-plugins-prime &&
-    chmod 777 /opt/munin/log/munin &&
-    perl munin-node-configure --shell --families=contrib,auto | sh -x
+    chmod 777 /opt/munin/log/munin
   EOH
   not_if { FileTest.exists?("/opt/munin/sbin/munin-node") }
 end
@@ -77,6 +76,13 @@ template '/etc/opt/munin/munin-node.conf' do
   variables(
     :cidr_configs => node[:munin_node][:cidr_configs]
   )
+end
+
+bash 'install_munin_node_plugins' do
+  code <<-EOH
+    perl /opt/munin/sbin/munin-node-configure --shell --families=contrib,auto | sh -x
+  EOH
+  not_if { FileTest.exists?("/opt/munin/sbin/munin-node") }
 end
 
 template "/etc/init.d/munin-node" do
