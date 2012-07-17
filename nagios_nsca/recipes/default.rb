@@ -73,5 +73,5 @@ ruby_block "nsca_edit_firewall_config" do
     file.save
     system "service iptables restart"
   end
-  not_if { file.lines.index(new_line) }
+  not_if { file.lines.empty? || file.lines.index(new_line) }
 end

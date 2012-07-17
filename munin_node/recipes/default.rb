@@ -120,6 +120,7 @@ ruby_block "munin_node_edit_firewall_config" do
     system "service iptables restart"
   end
   only_if do
+    !file.lines.empty? &&
     node[:munin_node][:needs_to_open_port_in_iptables] &&
     !file.lines.index(new_line)
   end
