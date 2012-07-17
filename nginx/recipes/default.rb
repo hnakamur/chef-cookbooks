@@ -162,7 +162,8 @@ end
 template '/etc/nginx/nginx.conf' do
   source 'nginx.conf.erb'
   variables(
-    :hostname => hostname
+    :crt_file => node[:ssl_certificate][:crt_file],
+    :key_file => node[:ssl_certificate][:key_file]
   )
   not_if { FileTest.exists?("/root/.chef/nginx/nginx.conf.written") }
 end
@@ -231,17 +232,17 @@ bash "create_empty_htdigest_passwd_file" do
 end
 
 bash "create_self_cerficiate" do
-  config = node[:self_certificate]
-  subject = config && config[:subject] ? config[:subject] % hostname : nil
-  days = config && config[:days] ? config[:days] : nil
-  key_file = "/etc/pki/tls/private/#{hostname}.key"
-  crt_file = "/etc/pki/tls/certs/#{hostname}.crt"
   code <<-EOH
-    openssl req -new -newkey rsa:2048 -x509 -nodes -days #{days} -set_serial 0 \
-    -subj "#{subject}" -out #{crt_file} -keyout #{key_file}
+    openssl req -new -newkey rsa:2048 -x509 -nodes -set_serial 0 \
+    -days #{node[:ssl_certificate][:days]} \
+    -subj "#{node[:ssl_certificate][:subject]}" \
+    -out #{node[:ssl_certificate][:crt_file]} \
+    -keyout #{node[:ssl_certificate][:key_file]}
   EOH
-  not_if do
-    !subject || FileTest.exists?(key_file) || FileTest.exists?(crt_file)
+  only_if do
+    node[:ssl_certificate] &&
+    node[:ssl_certificate][:create_self_certificate] &&
+    !FileTest.exists?(node[:ssl_certificate][:crt_file])
   end
 end
 

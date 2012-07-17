@@ -24,7 +24,10 @@
       {"ip": "127.0.0.0/24", "comment": "localhost"}
     ]
   },
-  "self_certificate": {
+  "ssl_certificate": {
+    "crt_file": "/etc/pki/tls/certs/web1.example.com.crt",
+    "key_file": "/etc/pki/tls/private/web1.example.com.key",
+    "create_self_certificate": true,
     "subject": "/C=JP/ST=Kanagawa/L=Yokohama City/CN=%s",
     "days": 365
   },
