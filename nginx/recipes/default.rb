@@ -231,9 +231,9 @@ bash "create_empty_htdigest_passwd_file" do
 end
 
 bash "create_self_cerficiate" do
-  subject = node[:self_certificate][:subject] ?
-    node[:self_certificate][:subject] % hostname : nil
-  days = node[:self_certificate][:days]
+  config = node[:self_certificate]
+  subject = config && config[:subject] ? config[:subject] % hostname : nil
+  days = config && config[:days] ? config[:days] : nil
   key_file = "/etc/pki/tls/private/#{hostname}.key"
   crt_file = "/etc/pki/tls/certs/#{hostname}.crt"
   code <<-EOH
