@@ -280,7 +280,7 @@ ruby_block "edit_firewall_config" do
     firewall_config_modified = true
   end
   not_if do
-    new_lines.all?{|new_line| file.lines.index new_line }
+    file.lines.empty? || new_lines.all?{|new_line| file.lines.index new_line }
   end
 end
 
