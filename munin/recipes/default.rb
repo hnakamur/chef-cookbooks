@@ -50,8 +50,7 @@ bash 'munin_install_perl_modules' do
       Params::Validate Net::SSLeay Getopt::Long \
       File::Copy::Recursive CGI::Fast Log::Log4perl \
       Log::Dispatch Log::Dispatch::FileRotate MIME::Lite \
-      Mail::Sendmail URI FCGI
-      # IO::Socket::INET6
+      Mail::Sendmail URI IO::Socket::INET6 FCGI
       # These modules were not found.
       # TimeDate IPC::Shareable Mail::Sender MailTools
   EOH

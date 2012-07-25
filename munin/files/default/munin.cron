@@ -4,4 +4,4 @@
 
 MAILTO=root
 
-*/5 * * * * munin if [ -x /opt/munin/bin/munin-cron ]; then /opt/munin/bin/munin-cron; fi
+*/5 * * * * munin if [ -x /usr/local/munin/bin/munin-cron ]; then /usr/local/munin/bin/munin-cron; fi

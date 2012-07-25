@@ -86,7 +86,7 @@ end
 
 bash 'install_munin_node_plugins' do
   code <<-EOH
-    perl /opt/munin/sbin/munin-node-configure --shell --families=contrib,auto | sh -x
+    perl /usr/local/munin/sbin/munin-node-configure --shell --families=contrib,auto | sh -x
   EOH
 end
 
