@@ -26,7 +26,7 @@
 
 version = node[:rrdtool][:version]
 
-%w{ make gcc pango-devel }.each do |pkg|
+%w{ make gcc pango-devel dejavu-sans-mono-fonts dejavu-lgc-sans-mono-fonts }.each do |pkg|
   package pkg
 end
 
