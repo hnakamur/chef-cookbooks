@@ -64,6 +64,10 @@ end
 remote_file "/usr/local/src/nginx-#{version}.tar.gz" do
   source "http://nginx.org/download/nginx-#{version}.tar.gz"
   case version
+  when "1.2.3"
+    checksum "06a1153b32b43f100ee9147fe230917deea648f0155111c749e35da120646bf5"
+  when "1.2.2"
+    checksum "409477c7a9fba58c110a176fd7965b9db188bcf8be0e7f8a0731b8ae1e6ee880"
   when "1.2.1"
     checksum "994ad97cbf6f7045f95ea9d6d401aad1e95766671e402c48af85aba5235a2dd7"
   end
@@ -162,6 +166,8 @@ end
 template '/etc/nginx/nginx.conf' do
   source 'nginx.conf.erb'
   variables(
+    :http_port => node[:nginx][:http_port],
+    :https_port => node[:nginx][:https_port],
     :crt_file => node[:ssl_certificate][:crt_file],
     :key_file => node[:ssl_certificate][:key_file]
   )

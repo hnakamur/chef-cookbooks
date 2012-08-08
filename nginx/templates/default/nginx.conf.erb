@@ -48,7 +48,7 @@ http {
     # HTTP server
     #
     server {
-        listen       80;
+        listen       <%= @http_port %>;
         server_name  _;
 
         location / {
@@ -75,7 +75,7 @@ http {
     ssl_prefer_server_ciphers   on;
 
     server {
-        listen       443 ssl;
+        listen       <%= @https_port %> ssl;
         server_name  _;
 
         location / {
