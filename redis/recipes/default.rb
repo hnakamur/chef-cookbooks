@@ -44,7 +44,8 @@ bash 'install_redis' do
     tar xf redis-#{version}.tar.gz &&
     cd redis-#{version} &&
     make &&
-    make install
+    make install &&
+    (cd utils && yes '' | ./install_server.sh)
   EOH
   not_if { FileTest.exists?("/usr/local/bin/redis-server") }
 end
