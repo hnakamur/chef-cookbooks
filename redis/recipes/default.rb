@@ -26,6 +26,10 @@
 
 version = node[:redis][:version]
 
+%w{ make gcc }.each do |pkg|
+  package pkg
+end
+
 remote_file "/usr/local/src/redis-#{version}.tar.gz" do
   source "http://redis.googlecode.com/files/redis-#{version}.tar.gz"
   case version
