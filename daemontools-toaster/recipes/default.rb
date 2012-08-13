@@ -29,10 +29,13 @@
 end
 
 bash 'install_daemontools-toaster' do
+  cwd '/'
   code <<-EOH
     rpm -ivh http://mirrors.qmailtoaster.com/daemontools-toaster-0.76-1.3.6.src.rpm &&
     rpmbuild -ba /root/rpmbuild/SPECS/daemontools-toaster.spec &&
     rpm -ivh /root/rpmbuild/RPMS/x86_64/daemontools-toaster-0.76-1.3.6.x86_64.rpm
+
+    /command/svscanboot &
   EOH
   not_if 'rpm -q --quiet daemontools-toaster'
 end
