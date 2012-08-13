@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
  ###############
  # REDHAT chkconfig header
@@ -15,22 +15,28 @@
  ### END INIT INFO
 
 . /usr/local/nvm/nvm.sh
-FOREVER=/var/www/hipache/node_modules/forever/bin/forever
+PATH=/var/www/hipache/node_modules/forever/bin:$PATH
+export PATH
 APPFILE=/var/www/hipache/app.js
 
 case "$1" in
     start)
-echo "echo start running"
-        $FOREVER start $APPFILE
+        # Cannot use grep -q here, which causes EPIPE in forever list.
+        if [ `forever list | grep -cF $APPFILE` == 0 ]; then
+          forever start $APPFILE
+          if [ -f /var/www/hipache/run_apps.sh ]; then
+            . /var/www/hipache/run_apps.sh
+          fi
+        fi
         ;;
     stop)
-        $FOREVER stopall
+        forever stopall
         ;;
     restart)
-        $FOREVER restartall
+        forever restartall
         ;;
     status)
-        $FOREVER list
+        forever list
         ;;
     *)
         echo $"Usage: service hipache {start|stop|restart|status}"
