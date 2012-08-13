@@ -26,32 +26,26 @@
 
 version = node[:nodejs][:version]
 
-%w{ make gcc gcc-c++ openssl-devel }.each do |pkg|
+%w{ git make gcc gcc-c++ openssl-devel }.each do |pkg|
   package pkg
 end
 
-remote_file "/usr/local/src/node-v#{version}.tar.gz" do
-  source "http://nodejs.org/dist/v#{version}/node-v#{version}.tar.gz"
-  case version
-  when "0.8.6"
-    checksum "dbd42800e69644beff5c2cf11a9d4cf6dfbd644a9a36ffdd5e8c6b8db9240854"
-  when "0.8.1"
-    checksum "0cda1325a010ce18f68501ae68e0ce97f0094e7a282c34a451f552621643a884"
-  when "0.8.0"
-    checksum "ecafca018b5109a28537633d0433d513f68b1bae7191a1821e8eaa84ccf128ee"
-  when "0.6.19"
-    checksum "4e33292477b01dfcf50bc628d580fd5af3e5ff807490ec46472b84100fb52fbb"
-  end
+bash 'install_nvm' do
+  code <<-EOH
+    git clone https://github.com/creationix/nvm.git /usr/local/nvm &&
+    cat >> /root/.bashrc <<EOF
+
+. /usr/local/nvm/nvm.sh
+EOF
+  EOH
+  not_if { FileTest.exists?("/usr/local/nvm") }
 end
 
 bash 'install_nodejs' do
-  cwd '/usr/local/src/'
   code <<-EOH
-    tar xf node-v#{version}.tar.gz &&
-    cd node-v#{version} &&
-    ./configure --prefix=/usr/local/node-v#{version} &&
-    make &&
-    make install
+    . /usr/local/nvm/nvm.sh &&
+    nvm install v#{version} &&
+    nvm alias default #{version}
   EOH
-  not_if { FileTest.exists?("/usr/local/node-v#{version}/bin/node") }
+  not_if { FileTest.exists?("/usr/local/nvm/v#{version}") }
 end
