@@ -1,0 +1,41 @@
+<script src="/socket.io/socket.io.js"></script>
+<script type="text/javascript">
+var socket = io.connect('http://<%= @vhost %>');
+socket.on('connect', function(msg) {
+  console.log("connet");
+  document.getElementById("connectId").innerHTML = 
+    "あなたの接続ID::" + socket.socket.transport.sessid;
+  document.getElementById("type").innerHTML = 
+    "接続方式::" + socket.socket.transport.name;
+});
+
+// メッセージを受けたとき
+socket.on('message', function(msg) {
+  // メッセージを画面に表示する
+  document.getElementById("receiveMsg").innerHTML = msg.value;
+});
+
+// メッセージを送る
+function SendMsg() {
+  var msg = document.getElementById("message").value;
+  // メッセージを発射する
+  socket.emit('message', { value: msg + ' (from <%= @vhost %>)' });
+}
+// 切断する
+function DisConnect() {
+  var msg = socket.socket.transport.sessid + "は切断しました。";
+  // メッセージを発射する
+  socket.emit('message', { value: msg });
+  // socketを切断する
+  socket.disconnect();
+}
+</script>
+
+<h1>socket.ioのサンプルプログラム @<%= @vhost %></h1>
+<div id="connectId"></div>
+<div id="type"></div>
+<br>
+<input type="text" id="message" value="">
+<input type="button" value="メッセージを送る" onclick="SendMsg()">
+<input type="button" value="切断する" onclick="DisConnect()">
+<div id="receiveMsg"></div>
