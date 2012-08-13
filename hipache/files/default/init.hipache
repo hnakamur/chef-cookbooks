@@ -1,0 +1,38 @@
+#!/bin/sh -x
+
+ ###############
+ # REDHAT chkconfig header
+ # chkconfig: - 59 73
+ # description: hipache is a distributed HTTP and websocket proxy
+ ### BEGIN INIT INFO
+ # Provides: hipache
+ # Required-Start: 
+ # Required-Stop: 
+ # Should-Start: 
+ # Should-Stop: 
+ # Short-Description: start and stop hipache
+ # Description: Hipache daemon
+ ### END INIT INFO
+
+. /usr/local/nvm/nvm.sh
+FOREVER=/var/www/hipache/node_modules/forever/bin/forever
+APPFILE=/var/www/hipache/app.js
+
+case "$1" in
+    start)
+echo "echo start running"
+        $FOREVER start $APPFILE
+        ;;
+    stop)
+        $FOREVER stopall
+        ;;
+    restart)
+        $FOREVER restartall
+        ;;
+    status)
+        $FOREVER list
+        ;;
+    *)
+        echo $"Usage: service hipache {start|stop|restart|status}"
+        ;;
+esac
