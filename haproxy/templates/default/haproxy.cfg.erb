@@ -1,0 +1,35 @@
+global
+  maxconn 4096
+  daemon
+  nbproc 1
+  log 127.0.0.1 local1 debug
+
+defaults
+  mode http
+  option httplog
+  log global
+
+frontend all 0.0.0.0:80
+  timeout client 86400000
+  default_backend nodejs_backend
+#  default_backend nginx_backend
+#  acl is_websocket hdr(Upgrade) -i WebSocket
+#  acl is_websocket path_beg /socket.io/
+#  use_backend nodejs_backend if is_websocket
+
+backend nginx_backend
+  balance roundrobin
+  option forwardfor # This sets X-Forwared-For
+  timeout server 30000
+  timeout connect 4000
+  option http-server-close
+  server server1 localhost:<%= @nginx_http_port %> weight 1 maxconn 1024 check
+
+backend nodejs_backend
+  balance roundrobin
+  option forwardfor # This sets X-Forwared-For
+  timeout queue 5000
+  timeout server 86400000
+  timeout connect 86400000
+  option http-server-close
+  server server1 localhost:8000 weight 1 maxconn 1024 check
