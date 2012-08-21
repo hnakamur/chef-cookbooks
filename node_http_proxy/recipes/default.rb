@@ -33,8 +33,8 @@ end
 bash "install_node_http_proxy" do
   cwd "/var/www/node_http_proxy"
   code <<-EOH
-    PATH=/usr/local/node-v#{node[:nodejs][:version]}/bin:$PATH \
-      npm install http-proxy forever
+    . /usr/local/nvm/nvm.sh &&
+    npm install forever http-proxy
   EOH
 end
 
@@ -60,5 +60,24 @@ template "/var/www/node_http_proxy/router.json" do
   variables(
     :virtual_hosts => node[:node_http_proxy][:virtual_hosts]
   )
-#  not_if { FileTest.exists?("/var/www/node_http_proxy/router.json") }
+  not_if { FileTest.exists?("/var/www/node_http_proxy/router.json") }
+end
+
+cookbook_file '/etc/init.d/node_http_proxy' do
+  source "init.node_http_proxy"
+  owner 'root'
+  group 'root'
+  mode '0755'
+  not_if { FileTest.exists?("/etc/init.d/node_http_proxy") }
+end
+
+service 'node_http_proxy' do
+  action [:enable]
+end
+bash 'start_node_http_proxy' do
+  cwd '/'
+  code <<-EOH
+    /etc/init.d/node_http_proxy start
+  EOH
+  not_if "/etc/init.d/node_http_proxy status | grep -q '/var/www/node_http_proxy/proxy.js'"
 end

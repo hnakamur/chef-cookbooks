@@ -1,0 +1,44 @@
+#!/bin/sh
+
+ ###############
+ # REDHAT chkconfig header
+ # chkconfig: - 59 73
+ # description: node_http_proxy is a distributed HTTP and websocket proxy
+ ### BEGIN INIT INFO
+ # Provides: node_http_proxy
+ # Required-Start: 
+ # Required-Stop: 
+ # Should-Start: 
+ # Should-Stop: 
+ # Short-Description: start and stop node_http_proxy
+ # Description: Hipache daemon
+ ### END INIT INFO
+
+. /usr/local/nvm/nvm.sh
+PATH=/var/www/node_http_proxy/node_modules/forever/bin:$PATH
+export PATH
+APPFILE=/var/www/node_http_proxy/proxy.js
+
+case "$1" in
+    start)
+        # Cannot use grep -q here, which causes EPIPE in forever list.
+        if [ `forever list | grep -cF $APPFILE` == 0 ]; then
+          forever start $APPFILE
+          if [ -f /var/www/node_http_proxy/run_apps.sh ]; then
+            . /var/www/node_http_proxy/run_apps.sh
+          fi
+        fi
+        ;;
+    stop)
+        forever stopall
+        ;;
+    restart)
+        forever restartall
+        ;;
+    status)
+        forever list
+        ;;
+    *)
+        echo $"Usage: service node_http_proxy {start|stop|restart|status}"
+        ;;
+esac
