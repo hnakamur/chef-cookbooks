@@ -1,0 +1,7 @@
+{
+  "router": {
+    <% @virtual_hosts.to_enum.with_index do |vhost, i| %>
+    "<%= vhost[:name] %>": "<%= vhost[:target] %>"<% if i < @virtual_hosts.size - 1%>,<% end %>
+    <% end %>
+  }
+}
