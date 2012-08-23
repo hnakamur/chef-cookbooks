@@ -59,8 +59,8 @@ end
 remote_file "/usr/local/src/munin-#{version}.tar.gz" do
   source "http://downloads.sourceforge.net/project/munin/stable/#{version}/munin-#{version}.tar.gz"
   case version
-  when "2.0.2"
-    checksum "e8a5266a85cde8b89a97fb7463a56a7ac9c038035b952e36047b7d599bb9181b"
+  when "2.0.4"
+    checksum "309388e3528b41d727cea01233f0d4f60714e2de443576e1c472e8a1dc81722c"
   end
 end
 
@@ -70,9 +70,6 @@ bash 'install_munin' do
   code <<-EOH
     tar xf munin-#{version}.tar.gz &&
     cd munin-#{version} &&
-    if [ ! -f master/static/dynazoom.html.orig ]; then
-      patch -b -p0 < #{file_dir}/use_cgiurl_graph_in_dynazoom.html.patch
-    fi &&
     if [ ! -f Makefile.config.orig ]; then
       patch -b -p1 < #{file_dir}/Makefile.config.patch
     fi &&
