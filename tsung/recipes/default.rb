@@ -26,7 +26,9 @@
 
 version = node[:tsung][:version]
 
-package 'gnuplot'
+%w{ gnuplot python-matplotlib pygtk2 }.each do |pkg|
+  package pkg
+end
 
 remote_file "/usr/local/src/tsung-#{version}.tar.gz" do
   source "http://tsung.erlang-projects.org/dist/tsung-#{version}.tar.gz"
@@ -46,4 +48,11 @@ bash 'install_tsung' do
     make install
   EOH
   not_if { FileTest.exists?("/usr/local/bin/tsung") }
+end
+
+# Template.pm is needed by /usr/local/lib/tsung/bin/tsung_stats.pl
+bash 'install_Template.pm' do
+  code <<-EOH
+    cpanm Template
+  EOH
 end
