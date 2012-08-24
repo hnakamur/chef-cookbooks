@@ -51,8 +51,8 @@ end
 remote_file "/usr/local/src/munin-#{version}.tar.gz" do
   source "http://downloads.sourceforge.net/project/munin/stable/#{version}/munin-#{version}.tar.gz"
   case version
-  when "2.0.2"
-    checksum "e8a5266a85cde8b89a97fb7463a56a7ac9c038035b952e36047b7d599bb9181b"
+  when "2.0.4"
+    checksum "309388e3528b41d727cea01233f0d4f60714e2de443576e1c472e8a1dc81722c"
   end
 end
 
@@ -95,9 +95,6 @@ template "/etc/init.d/munin-node" do
   owner 'root'
   group 'root'
   mode 0755
-  variables(
-    :perlbrew_perl_version => node[:munin_node][:perlbrew_perl_version]
-  )
 end
 
 service 'munin-node' do

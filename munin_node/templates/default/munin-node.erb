@@ -24,10 +24,9 @@ case "$1" in
 	echo -n "Starting Munin Node: "
 
 	# We use perl installed with perlbrew instead of system perl.
-	PERLBREW_ROOT=/usr/local/perlbrew
-	export PERLBREW_ROOT
-	source $PERLBREW_ROOT/etc/bashrc
-	perlbrew switch <%= @perlbrew_perl_version %>
+	PERLBREW_HOME=/usr/local/perlbrew/etc
+	export PERLBREW_HOME
+	source $PERLBREW_HOME/bashrc
 
 	# Without cd /usr/local/munin/sbin,
 	# CMD of ps is /usr/local/munin/sbin/munin-node.
