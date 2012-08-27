@@ -62,7 +62,7 @@ template '/etc/haproxy/haproxy.cfg' do
   variables(
     :nginx_http_port => node[:nginx][:http_port]
   )
-#  not_if { FileTest.exists?("/etc/haproxy/haproxy.cfg") }
+  not_if { FileTest.exists?("/etc/haproxy/haproxy.cfg") }
 end
 
 template '/etc/init.d/haproxy' do
