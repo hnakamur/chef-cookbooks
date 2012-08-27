@@ -26,6 +26,18 @@
 
 version = node[:stunnel][:version]
 
+group 'stunnel' do
+  gid node[:stunnel][:gid]
+end
+
+user 'stunnel' do
+  uid node[:stunnel][:uid]
+  gid 'stunnel'
+  home '/etc/stunnel'
+  shell '/bin/nologin'
+  comment 'Stunnel an SSL encryption wrapper'
+end
+
 remote_file "/usr/local/src/stunnel-#{version}.tar.gz" do
   source "http://www.stunnel.org/downloads/stunnel-#{version}.tar.gz"
 
@@ -61,6 +73,14 @@ template '/etc/stunnel/stunnel.conf' do
     :key_file => node[:ssl_certificate][:key_file]
   )
 #  not_if { FileTest.exists?("/etc/stunnel/stunnel.conf") }
+end
+
+cookbook_file "/etc/default/stunnel" do
+  source "etc_default_stunnel"
+  owner 'root'
+  group 'root'
+  mode 0644
+  not_if { FileTest.exists?("/etc/default/stunnel") }
 end
 
 service "stunnel" do
