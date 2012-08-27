@@ -243,7 +243,8 @@ bash "create_self_cerficiate" do
     -days #{node[:ssl_certificate][:days]} \
     -subj "#{node[:ssl_certificate][:subject]}" \
     -out #{node[:ssl_certificate][:crt_file]} \
-    -keyout #{node[:ssl_certificate][:key_file]}
+    -keyout #{node[:ssl_certificate][:key_file]} &&
+    chmod 400 #{node[:ssl_certificate][:key_file]}
   EOH
   only_if do
     node[:ssl_certificate] &&
