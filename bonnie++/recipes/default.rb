@@ -42,6 +42,7 @@ bash 'install_bonnie++' do
   cwd '/usr/local/src/'
   code <<-EOH
     tar xf /usr/local/src/bonnie++-#{version}.tgz &&
+    cd bonnie++-#{version} &&
     ./configure &&
     make &&
     make install
