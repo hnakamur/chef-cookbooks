@@ -33,6 +33,8 @@ end
 remote_file "/usr/local/src/pcre-#{version}.tar.bz2" do
   source "http://downloads.sourceforge.net/project/pcre/pcre/#{version}/pcre-#{version}.tar.bz2"
   case version
+  when "8.31"
+    checksum "5778a02535473c7ee7838ea598c19f451e63cf5eec0bf0307a688301c9078c3c"
   when "8.30"
     checksum "c1113fd7db934e97ad8b3917d432e5b642e9eb9afd127eb797804937c965f4ac"
   end
