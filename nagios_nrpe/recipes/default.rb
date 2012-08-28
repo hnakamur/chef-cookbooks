@@ -102,21 +102,3 @@ service 'xinetd' do
   supports :restart => true, :reload => true
   action [:enable, :start, :reload]
 end
-
-ruby_block "nagios_nrpe_edit_firewall_config" do
-  require "#{File.dirname(File.dirname(__FILE__))}/files/default/text_file.rb"
-  file = TextFile.load "/etc/sysconfig/iptables"
-  new_line = \
-    "-A INPUT -m state --state NEW -m tcp -p tcp --dport 5666 -j ACCEPT"
-  block do
-    file.lines.insert(
-      file.lines.index(
-        "-A INPUT -j REJECT --reject-with icmp-host-prohibited"
-      ),
-      new_line
-    )
-    file.save
-    system "service iptables restart"
-  end
-  not_if { file.lines.empty? || file.lines.index(new_line) }
-end
