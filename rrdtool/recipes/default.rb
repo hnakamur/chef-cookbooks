@@ -30,6 +30,12 @@ version = node[:rrdtool][:version]
   package pkg
 end
 
+bash 'rrdtool_install_perl_modules' do
+  code <<-EOH
+    cpanm ExtUtils::MakeMaker
+  EOH
+end
+
 remote_file "/usr/local/src/rrdtool-#{version}.tar.gz" do
   source "http://oss.oetiker.ch/rrdtool/pub/rrdtool-#{version}.tar.gz"
   case version
