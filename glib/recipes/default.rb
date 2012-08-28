@@ -34,6 +34,10 @@ remote_file "/usr/local/src/glib-#{version}.tar.xz" do
   dir = version.sub(/\.\d+$/, '')
   source "http://ftp.gnome.org/pub/gnome/sources/glib/#{dir}/glib-#{version}.tar.xz"
   case version
+  when "2.32.4"
+    checksum "a5d742a4fda22fb6975a8c0cfcd2499dd1c809b8afd4ef709bda4d11b167fae2"
+  when "2.32.3"
+    checksum "b65ceb462807e4a2f91c95e4293ce6bbefca308cb44a1407bcfdd9e40363ff4d"
   when "2.32.2"
     checksum "b1764abf00bac96e0e93e29fb9715ce75f3583579acac40648e18771d43d6136"
   end
