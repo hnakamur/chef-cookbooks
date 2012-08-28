@@ -100,25 +100,3 @@ end
 service 'munin-node' do
   action [:enable, :start]
 end
-
-ruby_block "munin_node_edit_firewall_config" do
-  require "#{File.dirname(File.dirname(__FILE__))}/files/default/text_file.rb"
-  file = TextFile.load "/etc/sysconfig/iptables"
-  new_line = \
-    "-A INPUT -m state --state NEW -m tcp -p tcp --dport 4949 -j ACCEPT"
-  block do
-    file.lines.insert(
-      file.lines.index(
-        "-A INPUT -j REJECT --reject-with icmp-host-prohibited"
-      ),
-      new_line
-    )
-    file.save
-    system "service iptables restart"
-  end
-  only_if do
-    !file.lines.empty? &&
-    node[:munin_node][:needs_to_open_port_in_iptables] &&
-    !file.lines.index(new_line)
-  end
-end
