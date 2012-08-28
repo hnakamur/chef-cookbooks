@@ -223,34 +223,11 @@ end
   end
 end
 
-directory "/etc/nginx/vhost.d" do
-  owner 'nginx'
-  group 'nginx'
-  mode 0775
-  recursive true
-end
-
 bash "create_empty_htdigest_passwd_file" do
   code <<-EOH
     touch /var/www/html/.htdigest
   EOH
   not_if { FileTest.exists?("/var/www/html/.htdigest") }
-end
-
-bash "create_self_cerficiate" do
-  code <<-EOH
-    openssl req -new -newkey rsa:2048 -x509 -nodes -set_serial 0 \
-    -days #{node[:ssl_certificate][:days]} \
-    -subj "#{node[:ssl_certificate][:subject]}" \
-    -out #{node[:ssl_certificate][:crt_file]} \
-    -keyout #{node[:ssl_certificate][:key_file]} &&
-    chmod 400 #{node[:ssl_certificate][:key_file]}
-  EOH
-  only_if do
-    node[:ssl_certificate] &&
-    node[:ssl_certificate][:create_self_certificate] &&
-    !FileTest.exists?(node[:ssl_certificate][:crt_file])
-  end
 end
 
 template '/etc/init.d/nginx' do
@@ -263,37 +240,4 @@ end
 service "nginx" do
   supports :restart => true, :reload => true
   action [:enable, :start]
-end
-
-firewall_config_modified = false
-
-ruby_block "edit_firewall_config" do
-  file = TextFile.load "/etc/sysconfig/iptables"
-  new_lines = [
-    "-A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT",
-    "-A INPUT -m state --state NEW -m tcp -p tcp --dport 443 -j ACCEPT"
-  ]
-  block do
-    new_lines.each do |new_line|
-      unless file.lines.index new_line
-        file.lines.insert(
-          file.lines.index(
-            "-A INPUT -j REJECT --reject-with icmp-host-prohibited"
-          ),
-          new_line
-        )
-      end
-    end
-    file.save
-    firewall_config_modified = true
-  end
-  not_if do
-    file.lines.empty? || new_lines.all?{|new_line| file.lines.index new_line }
-  end
-end
-
-service "iptables" do
-  supports :restart => true
-  action [:restart]
-  only_if { firewall_config_modified }
 end
