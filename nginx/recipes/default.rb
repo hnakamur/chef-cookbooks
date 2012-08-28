@@ -24,8 +24,6 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-require "#{File.dirname(File.dirname(__FILE__))}/files/default/text_file.rb"
-
 version = node[:nginx][:version]
 hostname = `hostname`.chomp
 
@@ -45,7 +43,7 @@ bash "exclude_nginx_in_nginx" do
   not_if "grep -q '^exclude=node\*' /etc/yum.repos.d/epel.repo"
 end
 
-%w{ make gcc openssl-devel zlib-devel libxslt-devel gd-devel GeoIP-devel }.each do |pkg|
+%w{ make gcc openssl-devel zlib-devel libxslt-devel gd-devel GeoIP-devel httpd-tools }.each do |pkg|
   package pkg
 end
 
@@ -73,28 +71,11 @@ remote_file "/usr/local/src/nginx-#{version}.tar.gz" do
   end
 end
 
-bash 'fetch_nginx_http_auth_digest' do
-  cwd '/usr/local/src/'
-  code <<-EOH
-    git clone https://github.com/samizdatco/nginx-http-auth-digest.git
-  EOH
-  not_if { FileTest.exists?("/usr/local/src/nginx-http-auth-digest") }
-end
-
-bash 'fetch_nginx_tcp_proxy_module' do
-  cwd '/usr/local/src/'
-  code <<-EOH
-    git clone https://github.com/yaoweibin/nginx_tcp_proxy_module.git
-  EOH
-  not_if { FileTest.exists?("/usr/local/src/nginx_tcp_proxy_module") }
-end
-
 bash 'install_nginx' do
   cwd '/usr/local/src/'
   code <<-EOH
     tar xf nginx-#{version}.tar.gz &&
     cd nginx-#{version} &&
-    patch -p1 < /usr/local/src/nginx_tcp_proxy_module/tcp.patch &&
     ./configure --prefix=/usr/local/nginx-#{version} \
       --sbin-path=/usr/sbin/nginx \
       --conf-path=/etc/nginx/nginx.conf \
@@ -131,8 +112,6 @@ bash 'install_nginx' do
       --with-pcre-jit \
       --with-md5-asm \
       --with-sha1-asm \
-      --add-module=/usr/local/src/nginx_tcp_proxy_module \
-      --add-module=/usr/local/src/nginx-http-auth-digest \
       --with-cc-opt='-O2 -g' &&
     make &&
     make install
@@ -163,18 +142,31 @@ end
   end
 end
 
+directory "/etc/nginx" do
+  mode 0755
+  owner "nginx"
+  group "nginx"
+  recursive true
+end
+
 template '/etc/nginx/nginx.conf' do
   source 'nginx.conf.erb'
   variables(
-    :http_port => node[:nginx][:http_port],
-    :https_port => node[:nginx][:https_port],
-    :crt_file => node[:ssl_certificate][:crt_file],
-    :key_file => node[:ssl_certificate][:key_file]
+    :http_port => node[:nginx][:http_port]
   )
   not_if { FileTest.exists?("/root/.chef/nginx/nginx.conf.written") }
 end
 directory "/root/.chef/nginx/nginx.conf.written" do
   recursive true
+end
+
+bash 'create_htpasswd' do
+  code <<-EOH
+    htpasswd -b -c /var/www/html/_default/.htpasswd \
+      "#{node[:nginx][:basic_auth_user_id]}" \
+      "#{node[:nginx][:basic_auth_user_password]}"
+  EOH
+  not_if { FileTest.exists?('/var/www/html/_default/.htpasswd') }
 end
 
 template '/etc/nginx/allow_common_ip.conf' do
@@ -214,20 +206,11 @@ template "/var/www/html/_default/htdocs/index.html" do
   not_if { FileTest.exists?("/var/www/html/_default/htdocs/index.html") }
 end
 
-%w{ vhost.d http.location.d https.location.d }.each do |dir|
-  directory "/etc/nginx/#{dir}" do
-    owner 'nginx'
-    group 'nginx'
-    mode 0775
-    recursive true
-  end
-end
-
-bash "create_empty_htdigest_passwd_file" do
-  code <<-EOH
-    touch /var/www/html/.htdigest
-  EOH
-  not_if { FileTest.exists?("/var/www/html/.htdigest") }
+directory "/etc/nginx/vhost.d" do
+  owner 'nginx'
+  group 'nginx'
+  mode 0775
+  recursive true
 end
 
 template '/etc/init.d/nginx' do

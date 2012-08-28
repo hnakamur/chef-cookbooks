@@ -56,40 +56,11 @@ http {
             index  index.html index.htm;
 
             satisfy any;
-            auth_digest_user_file /var/www/html/.htdigest;
-            auth_digest "Authentication Required";
+            auth_basic_user_file /var/www/html/_default/.htpasswd;
+            auth_basic "Authentication Required";
             include /etc/nginx/allow_common_ip.conf;
             deny all;
         }
-
-        include /etc/nginx/http.location.d/*.conf;
-    }
-
-    # HTTPS server
-    #
-    ssl_certificate      <%= @crt_file %>;
-    ssl_certificate_key  <%= @key_file %>;
-    ssl_protocols        SSLv2 SSLv3 TLSv1;
-    ssl_session_timeout  5m;
-    ssl_ciphers          HIGH:!aNULL:!MD5;
-    ssl_prefer_server_ciphers   on;
-
-    server {
-        listen       <%= @https_port %> ssl;
-        server_name  _;
-
-        location / {
-            root   /var/www/html/_default/htdocs;
-            index  index.html index.htm;
-
-            satisfy any;
-            auth_digest_user_file /var/www/html/.htdigest;
-            auth_digest "Authentication Required";
-            include /etc/nginx/allow_common_ip.conf;
-            deny all;
-        }
-
-        include /etc/nginx/https.location.d/*.conf;
     }
 
     include /etc/nginx/vhost.d/*.conf;
