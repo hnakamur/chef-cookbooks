@@ -56,6 +56,8 @@ end
 remote_file "/usr/local/src/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
+  when "5.5.27-1"
+    checksum "ee22c24f9c6a423884624adff4a982a49856c2fab610f5ec4ab9df7f90cbe6ff"
   when "5.5.25a-1"
     checksum "7df834438f49c16e36842bde0db6da56596c6f8d2b053ea7e6f5c57367d1974d"
   end
@@ -64,6 +66,8 @@ end
 remote_file "/usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-shared-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
+  when "5.5.27-1"
+    checksum ""
   when "5.5.25a-1"
     checksum "eb80d2401b48a4139e98fc9f244374f5a0bf54f46ba6e1c7be6890fb961df969"
   end
@@ -72,6 +76,8 @@ end
 remote_file "/usr/local/src/MySQL-server-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-server-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
+  when "5.5.27-1"
+    checksum "fe7a5be7634bd10420f81ee176ab7b53662d76a8b813b7a2f563cc207413db32"
   when "5.5.25a-1"
     checksum "fecbea3317e9561df99efe69e77d4b57fc75f9654a04838652c2dcfb704b4e27"
   end
@@ -81,6 +87,8 @@ end
 remote_file "/usr/local/src/MySQL-client-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-client-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
+  when "5.5.27-1"
+    checksum "76c13c73e29a3eccf6be008bc837b13c24a45736e4e0b7203e99140bbaa5914f"
   when "5.5.25a-1"
     checksum "cd29cad2b84c923b4091084b010cc14e81a847e26099904a572623863490f74e"
   end
@@ -89,6 +97,8 @@ end
 remote_file "/usr/local/src/MySQL-devel-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-devel-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
+  when "5.5.27-1"
+    checksum "84badc2cadc9f8cbd691647aba58f94ab6e0cbcde4163185f166a92aa545551c"
   when "5.5.25a-1"
     checksum "408aea290ef725e9db2bf8aa46447ec78ee358f852376dedd80af46383797794"
   end
