@@ -25,7 +25,9 @@
 #
 
 version = node[:munin][:version]
+enable_apache = node[:munin][:enable_apache]
 enable_mysql = node[:munin][:enable_mysql]
+apache_port = node[:apache][:port]
 
 group 'munin' do
   gid node[:munin][:gid]
@@ -75,6 +77,25 @@ bash 'install_munin_node' do
   not_if { FileTest.exists?("/usr/local/munin/sbin/munin-node") }
 end
 
+bash 'munin_install_perl_modules_for_apache_plugins' do
+  code <<-EOH
+    cpanm LWP::UserAgent
+  EOH
+  only_if { enable_apache }
+end
+bash 'make_apache_plugins_links' do
+  code <<-EOH
+    ln -sf /usr/local/munin/lib/plugins/apache_* /etc/munin/plugins/
+  EOH
+  only_if { enable_apache }
+end
+bash 'remove_apache_plugins_links' do
+  code <<-EOH
+    rm /etc/munin/plugins/apache_*
+  EOH
+  not_if { enable_apache }
+end
+
 cookbook_file '/usr/local/munin/lib/plugins/mysql_connections' do
   source 'mysql_connections'
   owner 'root'
@@ -85,7 +106,7 @@ end
 
 bash 'make_link_mysql_connections_plugin' do
   code <<-EOH
-    ln -s /usr/local/munin/lib/plugins/mysql_connections /etc/munin/plugins/
+    ln -sf /usr/local/munin/lib/plugins/mysql_connections /etc/munin/plugins/
   EOH
   only_if do
     enable_mysql && 
@@ -112,6 +133,8 @@ template '/etc/munin/plugin-conf.d/munin-node' do
   group "root"
   mode '0644'
   variables(
+    :apache_port => apache_port,
+    :enable_apache => enable_apache,
     :enable_mysql => enable_mysql
   )
 end

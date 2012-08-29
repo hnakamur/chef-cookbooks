@@ -42,3 +42,10 @@ user root
 user root
 [munin_stats]
 user root
+
+<% if @enable_apache %>
+[apache_*]
+env.url   http://127.0.0.1:%d/server-status?auto
+env.ports <%= @apache_port %>
+env.showfree 1
+<% end %>
