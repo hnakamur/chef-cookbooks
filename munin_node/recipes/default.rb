@@ -26,8 +26,10 @@
 
 version = node[:munin][:version]
 enable_apache = node[:munin][:enable_apache]
+enable_nginx = node[:munin][:enable_nginx]
 enable_mysql = node[:munin][:enable_mysql]
 apache_port = node[:apache][:port]
+nginx_port = node[:nginx][:http_port]
 
 group 'munin' do
   gid node[:munin][:gid]
@@ -77,6 +79,9 @@ bash 'install_munin_node' do
   not_if { FileTest.exists?("/usr/local/munin/sbin/munin-node") }
 end
 
+
+## apache plugins
+
 bash 'munin_install_perl_modules_for_apache_plugins' do
   code <<-EOH
     cpanm LWP::UserAgent
@@ -95,6 +100,39 @@ bash 'remove_apache_plugins_links' do
   EOH
   not_if { enable_apache }
 end
+
+
+## nginx plugins
+
+cookbook_file '/etc/nginx/location.d/nginx_status.conf' do
+  source 'nginx_status.conf'
+  owner 'root'
+  group 'root'
+  mode '0644'
+  only_if { enable_nginx }
+end
+bash 'reload_nginx_for_nginx_status' do
+  code <<-EOH
+    service nginx reload &&
+    mkdir -p /root/.chef/munin_node/nginx_reloaded
+  EOH
+  not_if { FileTest.exist?("/root/.chef/munin_node/nginx_reloaded") }
+end
+bash 'make_nginx_plugins_links' do
+  code <<-EOH
+    ln -sf /usr/local/munin/lib/plugins/nginx_* /etc/munin/plugins/
+  EOH
+  only_if { enable_nginx }
+end
+bash 'remove_nginx_plugins_links' do
+  code <<-EOH
+    rm /etc/munin/plugins/nginx_*
+  EOH
+  not_if { enable_nginx }
+end
+
+
+## mysql plugins
 
 cookbook_file '/usr/local/munin/lib/plugins/mysql_connections' do
   source 'mysql_connections'
@@ -135,6 +173,8 @@ template '/etc/munin/plugin-conf.d/munin-node' do
   variables(
     :apache_port => apache_port,
     :enable_apache => enable_apache,
+    :nginx_port => nginx_port,
+    :enable_nginx => enable_nginx,
     :enable_mysql => enable_mysql
   )
 end

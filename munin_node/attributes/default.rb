@@ -2,6 +2,7 @@ default.munin.version = "2.0.4"
 default.munin.gid = 403
 default.munin.uid = 403
 
+default.munin.enable_nginx = true
 default.munin.enable_apache = true
 default.munin.enable_mysql = true
 
@@ -9,6 +10,7 @@ default.munin_node.cidr_configs = [
   "cidr_allow 127.0.0.1/32"
 ]
 
+default.nginx.http_port = 81
 default.apache.port = 8001
 
 # open port 4949 in iptables if munin server is running on a remote machine.
