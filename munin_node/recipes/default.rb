@@ -25,6 +25,7 @@
 #
 
 version = node[:munin][:version]
+enable_mysql = node[:munin][:enable_mysql]
 
 group 'munin' do
   gid node[:munin][:gid]
@@ -74,11 +75,52 @@ bash 'install_munin_node' do
   not_if { FileTest.exists?("/usr/local/munin/sbin/munin-node") }
 end
 
-template '/etc/munin/munin-node.conf' do
-  source 'munin-node.conf.erb'
-  mode 0644
+cookbook_file '/usr/local/munin/lib/plugins/mysql_connections' do
+  source 'mysql_connections'
+  owner 'root'
+  group 'root'
+  mode '0755'
+  only_if { enable_mysql }
+end
+
+bash 'make_link_mysql_connections_plugin' do
+  code <<-EOH
+    ln -s /usr/local/munin/lib/plugins/mysql_connections /etc/munin/plugins/
+  EOH
+  only_if do
+    enable_mysql && 
+    !FileTest.exists?("/etc/munin/plugins/mysql_connections")
+  end
+end
+
+bash 'create_munin_user_in_mysql' do
+  code <<-EOH
+    mysql -uroot <<'EOF'
+create user munin;
+grant usage on *.* to 'munin'@'localhost';
+EOF
+  EOH
+  only_if do
+    enable_mysql &&
+    `echo "select count(*) from mysql.user where user = 'munin'" | mysql -uroot --skip-column-names`.chomp == '0'
+  end
+end
+
+template '/etc/munin/plugin-conf.d/munin-node' do
+  source 'munin-node.plugin.conf.erb'
   owner "root"
   group "root"
+  mode '0644'
+  variables(
+    :enable_mysql => enable_mysql
+  )
+end
+
+template '/etc/munin/munin-node.conf' do
+  source 'munin-node.conf.erb'
+  owner "root"
+  group "root"
+  mode '0644'
   variables(
     :cidr_configs => node[:munin_node][:cidr_configs]
   )
