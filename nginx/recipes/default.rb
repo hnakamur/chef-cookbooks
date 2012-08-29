@@ -206,11 +206,13 @@ template "/var/www/html/_default/htdocs/index.html" do
   not_if { FileTest.exists?("/var/www/html/_default/htdocs/index.html") }
 end
 
-directory "/etc/nginx/vhost.d" do
-  owner 'nginx'
-  group 'nginx'
-  mode 0775
-  recursive true
+%w{ /etc/nginx/vhost.d /etc/nginx/location.d }.each do |dir|
+  directory dir do
+    owner 'nginx'
+    group 'nginx'
+    mode 0775
+    recursive true
+  end
 end
 
 template '/etc/init.d/nginx' do

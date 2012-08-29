@@ -61,6 +61,8 @@ http {
             include /etc/nginx/allow_common_ip.conf;
             deny all;
         }
+
+        include /etc/nginx/location.d/*.conf;
     }
 
     include /etc/nginx/vhost.d/*.conf;
