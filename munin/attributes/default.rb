@@ -1,4 +1,8 @@
 default.munin.version = "2.0.4"
+#
+# 'cron' or 'cgi' ('cgi' includes FastCGI)
+default.munin.generation_strategy = "cron"
+
 default.munin.gid = 403
 default.munin.uid = 403
 default.munin.web_interface_login = "munin"

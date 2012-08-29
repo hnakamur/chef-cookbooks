@@ -25,9 +25,7 @@
 #
 
 version = node[:munin][:version]
-
-# 'cron' or 'cgi' ('cgi' includes FastCGI)
-generation_strategy = node[:munin][:generation_strategy] || 'cron'
+generation_strategy = node[:munin][:generation_strategy]
 
 group 'munin' do
   gid node[:munin][:gid]
@@ -130,15 +128,4 @@ bash 'munin_apache_graceful_restart' do
   code <<-EOH
     service httpd graceful
   EOH
-end
-
-template '/etc/nginx/https.location.d/https.munin.conf' do
-  source 'https.munin.conf.erb'
-  variables(
-    :backend_port => node[:apache][:port]
-  )
-end
-service 'nginx' do
-  supports :reload => true
-  action [:reload]
 end
