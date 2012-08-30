@@ -162,6 +162,7 @@ end
 
 bash 'create_htpasswd' do
   code <<-EOH
+    mkdir -p /var/www/html/_default &&
     htpasswd -b -c /var/www/html/_default/.htpasswd \
       "#{node[:nginx][:basic_auth_user_id]}" \
       "#{node[:nginx][:basic_auth_user_password]}"
