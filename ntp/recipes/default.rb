@@ -24,24 +24,18 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-package 'ntp' do
-  action [:install]
-end
+package 'ntp'
 
 template '/etc/ntp.conf' do
   source 'ntp.conf.erb'
   variables(
-    :ntp_servers => [
-      '0.centos.pool.ntp.org',
-      '1.centos.pool.ntp.org',
-      '2.centos.pool.ntp.org',
-    ]
+    :ntp_servers => node[:ntp][:servers]
   )
   notifies :restart, 'service[ntpd]'
 end
  
-execute 'ntpdate' do
-  command 'ntpdate 0.centos.pool.ntp.org'
+execute 'ntp_initial_adjustment' do
+  command 'ntpd -q'
   not_if { File.exists? '/var/run/ntpd.pid' }
 end
  
