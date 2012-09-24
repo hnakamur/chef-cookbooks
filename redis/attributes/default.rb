@@ -1,1 +1,1 @@
-default.redis.version = "2.4.16"
+default.redis.version = "2.4.17"

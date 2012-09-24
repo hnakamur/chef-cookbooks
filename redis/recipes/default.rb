@@ -33,6 +33,8 @@ end
 remote_file "/usr/local/src/redis-#{version}.tar.gz" do
   source "http://redis.googlecode.com/files/redis-#{version}.tar.gz"
   case version
+  when "2.4.17"
+    checksum "3fae7c47ef84886ff65073593c91586bb675babaf702eb6f3b37855ab3066ebd"
   when "2.4.16"
     checksum "d35cc89d73aa1ff05af5f1380a4411c828979b3b446f5caf8b5720225b38e15b"
   end
