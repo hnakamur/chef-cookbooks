@@ -1,1 +1,1 @@
-default.nodejs.version = "0.8.8"
+default.nodejs.version = "0.8.10"
