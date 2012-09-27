@@ -157,9 +157,35 @@ end
 template '/etc/my.cnf' do
   source 'my.cnf.erb'
   variables(
-    :expire_logs_days => node[:mysql][:expire_logs_days]
+    :expire_logs_days => node[:mysql][:expire_logs_days],
+    :long_query_time => node[:mysql][:long_query_time]
   )
   only_if { install_type == 'server' }
+end
+
+directory '/var/run/mysqld' do
+  mode 0755
+  owner "mysql"
+  group "mysql"
+  recursive true
+  only_if { install_type == 'server' }
+end
+
+file "/var/log/mysqld-slow.log" do
+  owner "mysql"
+  group "mysql"
+  mode 0644
+end
+
+bash 'mysql_install_db' do
+  code <<-EOH
+    mysql_install_db
+    touch /root/.chef/.mysql_install_db_complete
+  EOH
+  only_if do
+    install_type == 'server' &&
+    !File.exists?('/root/.chef/.mysql_install_db_complete')
+  end
 end
 
 service 'mysql' do
