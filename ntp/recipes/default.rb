@@ -35,7 +35,7 @@ template '/etc/ntp.conf' do
 end
  
 execute 'ntp_initial_adjustment' do
-  command 'ntpd -q'
+  command "ntpdate #{node[:ntp][:servers][0]}"
   not_if { File.exists? '/var/run/ntpd.pid' }
 end
  
