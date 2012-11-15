@@ -25,7 +25,6 @@
 #
 
 package "libev-devel"
-package "waf"
 
 bash 'checkout_weighttp_src' do
   cwd '/usr/local/src'
