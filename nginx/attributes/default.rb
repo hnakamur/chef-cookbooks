@@ -5,8 +5,8 @@ default.nginx.uid = 400
 default.nginx.basic_auth_user_id = "someone"
 default.nginx.basic_auth_user_pass = "_change_this_in_node_json_"
 default.nginx.allowed_addresses = [
-  {ip: "192.168.11.0/24", comment: "my lan"},
-  {ip: "127.0.0.0/24", comment: "localhost"}
+  {:ip => "192.168.11.0/24", :comment => "my lan"},
+  {:ip => "127.0.0.0/24", :comment => "localhost"}
 ]
 
 default.ssl_certificate.subject = "/C=JP/ST=Kanagawa/L=Yokohama City/CN=test2.example.com"
