@@ -1,4 +1,3 @@
-default.nginx.version = "1.2.3"
 default.nginx.http_port = 81
 default.nginx.gid = 400
 default.nginx.uid = 400
