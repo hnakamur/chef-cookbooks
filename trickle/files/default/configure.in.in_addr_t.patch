@@ -1,0 +1,18 @@
+diff -ruN trickle-1.06.orig/configure.in trickle-1.06/configure.in
+--- trickle-1.06.orig/configure.in	2003-06-02 20:45:45.000000000 +0900
++++ trickle-1.06/configure.in	2012-11-15 23:58:23.798640735 +0900
+@@ -67,7 +67,13 @@
+ AC_CHECK_TYPE(u_int32_t, unsigned int)
+ AC_CHECK_TYPE(u_int16_t, unsigned short)
+ AC_CHECK_TYPE(u_int8_t, unsigned char)
+-AC_CHECK_TYPE(in_addr_t, unsigned long)
++AC_CHECK_TYPE(in_addr_t, [], [AC_DEFINE([in_addr_t], [uint32_t], [in_addr_t])], [
++#if HAVE_SYS_TYPES_H
++# include <sys/types.h>
++#endif
++#if HAVE_NETINET_IN_H
++# include <netinet/in.h>
++#endif])
+ 
+ dnl Checks for library functions.
+ AC_PROG_GCC_TRADITIONAL
