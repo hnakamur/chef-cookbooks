@@ -23,7 +23,7 @@ log_facility=daemon
 # number.  The file is only written if the NRPE daemon is started by the root
 # user and is running in standalone mode.
 
-pid_file=/var/run/nrpe.pid
+pid_file=/var/run/nrpe/nrpe.pid
 
 
 
@@ -51,7 +51,7 @@ server_port=5666
 # 
 # NOTE: This option is ignored if NRPE is running under either inetd or xinetd
 
-nrpe_user=nagios
+nrpe_user=nrpe
 
 
 
@@ -61,7 +61,7 @@ nrpe_user=nagios
 # 
 # NOTE: This option is ignored if NRPE is running under either inetd or xinetd
 
-nrpe_group=nagios
+nrpe_group=nrpe
 
 
 
@@ -171,8 +171,7 @@ connection_timeout=300
 # This directive allows you to include definitions from config files (with a
 # .cfg extension) in one or more directories (with recursion).
 
-#include_dir=<somedirectory>
-#include_dir=<someotherdirectory>
+include_dir=/etc/nrpe.d/
 
 
 
@@ -214,7 +213,7 @@ command[<%= command[:name] %>]=<%= command[:line] %>
 # config file is set to '1'.  This poses a potential security risk, so
 # make sure you read the SECURITY file before doing this.
 
-#command[check_users]=/usr/local/nagios/libexec/check_users -w $ARG1$ -c $ARG2$
-#command[check_load]=/usr/local/nagios/libexec/check_load -w $ARG1$ -c $ARG2$
-#command[check_disk]=/usr/local/nagios/libexec/check_disk -w $ARG1$ -c $ARG2$ -p $ARG3$
-#command[check_procs]=/usr/local/nagios/libexec/check_procs -w $ARG1$ -c $ARG2$ -s $ARG3$
+#command[check_users]=/usr/lib64/nagios/plugins/check_users -w $ARG1$ -c $ARG2$
+#command[check_load]=/usr/lib64/nagios/plugins/check_load -w $ARG1$ -c $ARG2$
+#command[check_disk]=/usr/lib64/nagios/plugins/check_disk -w $ARG1$ -c $ARG2$ -p $ARG3$
+#command[check_procs]=/usr/lib64/nagios/plugins/check_procs -w $ARG1$ -c $ARG2$ -s $ARG3$

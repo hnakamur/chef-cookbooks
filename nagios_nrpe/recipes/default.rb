@@ -24,35 +24,17 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-version = node[:nagios_nrpe][:version]
+package "nagios-plugins-nrpe"
+package "nrpe"
 
-remote_file "/usr/local/src/nrpe-#{version}.tar.gz" do
-  source "http://prdownloads.sourceforge.net/sourceforge/nagios/nrpe-#{version}.tar.gz"
-  case version
-  when "2.13"
-    checksum "bac8f7eb9daddf96b732a59ffc5762b1cf073fb70f6881d95216ebcd1254a254"
-  end
+group 'nrpe' do
+  gid node[:nagios_nrpe][:gid]
 end
 
-bash 'install_nrpe' do
-  cwd '/usr/local/src/'
-  code <<-EOH
-    tar xf nrpe-#{version}.tar.gz &&
-    cd nrpe-#{version} &&
-    ./configure \
-        --sysconfdir=/etc/nagios \
-        --localstatedir=/var/nagios \
-        --enable-ssl &&
-    make all &&
-    mkdir -p /usr/local/nagios/bin/ &&
-    install -m 0755 -o nagios -g nagios \
-      /usr/local/src/nrpe-#{version}/src/check_nrpe \
-      /usr/local/nagios/libexec/ &&
-    install -m 0774 -o nagios -g nagios \
-      /usr/local/src/nrpe-#{version}/src/nrpe \
-      /usr/local/nagios/bin/
-  EOH
-  not_if { FileTest.exists?("/usr/local/nagios/bin/nrpe") }
+user 'nrpe' do
+  uid node[:nagios_nrpe][:uid]
+  gid 'nrpe'
+  comment 'Nagios Remote Plugin Executor'
 end
 
 directory '/etc/nagios' do

@@ -1,27 +1,20 @@
-default.nagios.version = "3.4.1"
+default.alert_mail_recipient = "your_mail_address@example.com"
 default.nagios.gid = 401
 default.nagios.uid = 401
-default.nagios.nagcmd_gid = 402
 default.nagios.date_format = "iso8601"
 default.nagios.localhost_ssh_notifications_enabled = 1
 default.nagios.localhost_http_notifications_enabled = 1
-default.nagios.generic_service.max_check_attempts = 3
-default.nagios.generic_service.normal_check_interval = 10
-default.nagios.generic_service.retry_check_interval = 2
-default.nagios.local_service.max_check_attempts = 4
-default.nagios.local_service.normal_check_interval = 5
-default.nagios.local_service.retry_check_interval = 1
 default.nagios.hostgroups = [
   {
     :name => "app-servers",
     :alias => "App Servers",
-    :members => "test2"
+    :members => "example"
   }
 ]
 default.nagios.hosts = [
   {
-    :name => "test2",
-    :alias => "test2.naru.net",
+    :name => "web1",
+    :alias => "web1.example.com",
     :address => "127.0.0.1"
   }
 ]
@@ -56,21 +49,21 @@ default.nagios.services = [
   },
   {
     :use => "generic-service",
-    :hostgroup_name => "web-servers",
+    :hostgroup_name => "app-servers",
     :service_description => "HTTP",
     :check_command => "check_http_url!/",
     :notifications_enabled => 1
   },
   {
     :use => "generic-service",
-    :hostgroup_name => "web-servers",
+    :hostgroup_name => "app-servers",
     :service_description => "apache proc",
     :check_command => "check_nrpe!check_httpd_proc",
     :notifications_enabled => 1
   },
   {
     :use => "generic-service",
-    :hostgroup_name => "web-servers",
+    :hostgroup_name => "app-servers",
     :service_description => "nginx proc",
     :check_command => "check_nrpe!check_nginx_proc",
     :notifications_enabled => 1

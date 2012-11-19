@@ -22,18 +22,19 @@ class TextFile
   end
 
   def save(backup_suffix=nil)
-    tmpf = Tempfile.open(@path) do |f|
+    tmp_path = nil
+    Tempfile.open(File.basename(@path)) do |f|
       @lines.each do |line|
         f.write(line)
         f.write("\n")
       end
-      f
+      tmp_path = f.path
     end
     if backup_suffix
       FileUtils.mv @path, @path + backup_suffix
     else
       FileUtils.rm @path
     end
-    FileUtils.mv tmpf, @path
+    FileUtils.mv tmp_path, @path
   end
 end

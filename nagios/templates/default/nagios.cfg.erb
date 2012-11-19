@@ -16,7 +16,7 @@
 # for historical purposes.  This should be the first option specified 
 # in the config file!!!
 
-log_file=/var/nagios/nagios.log
+log_file=/var/log/nagios/nagios.log
 
 
 
@@ -44,9 +44,6 @@ cfg_file=/etc/nagios/objects/localhost.cfg
 # Definitions for monitoring a network printer
 #cfg_file=/etc/nagios/objects/printer.cfg
 
-cfg_file=/etc/nagios/objects/hostgroups.cfg
-cfg_file=/etc/nagios/objects/hosts.cfg
-cfg_file=/etc/nagios/objects/services.cfg
 
 # You can also tell Nagios to process all config files (with a .cfg
 # extension) in a particular directory by using the cfg_dir
@@ -67,7 +64,7 @@ cfg_file=/etc/nagios/objects/services.cfg
 # directly) in order to prevent inconsistencies that can occur
 # when the config files are modified after Nagios starts.
 
-object_cache_file=/var/nagios/objects.cache
+object_cache_file=/var/log/nagios/objects.cache
 
 
 
@@ -83,7 +80,7 @@ object_cache_file=/var/nagios/objects.cache
 # Read the documentation section on optimizing Nagios to find our more
 # about how this feature works.
 
-precached_object_file=/var/nagios/objects.precache
+precached_object_file=/var/log/nagios/objects.precache
 
 
 
@@ -96,7 +93,7 @@ precached_object_file=/var/nagios/objects.precache
 # defined as macros in this file and restrictive permissions (600)
 # can be placed on this file.
 
-resource_file=/etc/nagios/resource.cfg
+resource_file=/etc/nagios/private/resource.cfg
 
 
 
@@ -106,7 +103,7 @@ resource_file=/etc/nagios/resource.cfg
 # The contents of the status file are deleted every time Nagios
 #  restarts.
 
-status_file=/var/nagios/status.dat
+status_file=/var/log/nagios/status.dat
 
 
 
@@ -173,7 +170,7 @@ command_check_interval=-1
 # directory level instead of on the file, as the file is deleted every
 # time its contents are processed.
 
-command_file=/var/nagios/rw/nagios.cmd
+command_file=/var/spool/nagios/cmd/nagios.cmd
 
 
 
@@ -191,7 +188,7 @@ external_command_buffer_slots=4096
 # This is the lockfile that Nagios will use to store its PID number
 # in when it is running in daemon mode.
 
-lock_file=/var/nagios/nagios.lock
+lock_file=/var/run/nagios.pid
 
 
 
@@ -201,7 +198,7 @@ lock_file=/var/nagios/nagios.lock
 # is created, used, and deleted throughout the time that Nagios is
 # running.
 
-temp_file=/var/nagios/nagios.tmp
+temp_file=/var/log/nagios/nagios.tmp
 
 
 
@@ -267,7 +264,7 @@ log_rotation_method=d
 # This is the directory where archived (rotated) log files should be 
 # placed (assuming you've chosen to do log rotation).
 
-log_archive_path=/var/nagios/archives
+log_archive_path=/var/log/nagios/archives
 
 
 
@@ -465,7 +462,7 @@ max_check_result_reaper_time=30
 # Note: Make sure that only one instance of Nagios has access
 # to this directory!  
 
-check_result_path=/var/nagios/spool/checkresults
+check_result_path=/var/log/nagios/spool/checkresults
 
 
 
@@ -640,7 +637,7 @@ retain_state_information=1
 # This file is used only if the retain_state_information
 # variable is set to 1.
 
-state_retention_file=/var/nagios/retention.dat
+state_retention_file=/var/log/nagios/retention.dat
 
 
 
@@ -1133,7 +1130,7 @@ date_format=<%= @date_format %>
 # embedded Perl interpreter) is located.  If you didn't compile
 # Nagios with embedded Perl support, this option has no effect.
 
-p1_file=/usr/local/nagios/bin/p1.pl
+p1_file=/usr/sbin/p1.pl
 
 
 
@@ -1325,7 +1322,7 @@ debug_verbosity=1
 # DEBUG FILE
 # This option determines where Nagios should write debugging information.
 
-debug_file=/var/nagios/nagios.debug
+debug_file=/var/log/nagios/nagios.debug
 
 
 

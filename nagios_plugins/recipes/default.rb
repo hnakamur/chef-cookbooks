@@ -24,17 +24,6 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-version = node[:nagios_plugins][:version]
-
-bash "exclude-nagios-in-epel-repo" do
-  code <<-EOH
-    TMPFILE=/tmp/epel.repo.$$ &&
-    awk -f #{File.dirname(File.dirname(__FILE__))}/files/default/exclude-pkg-in-epel.awk pkg=nagios /etc/yum.repos.d/epel.repo > $TMPFILE &&
-    cp $TMPFILE /etc/yum.repos.d/epel.repo
-  EOH
-  not_if "grep -q '^exclude=.*nagios' /etc/yum.repos.d/epel.repo"
-end
-
 group 'nagios' do
   gid node[:nagios][:gid]
 end
@@ -45,29 +34,12 @@ user 'nagios' do
   comment 'Nagios monitoring tool'
 end
 
-%w{ make gcc }.each do |pkg|
-  package pkg
-end
-
-remote_file "/usr/local/src/nagios-plugins-#{version}.tar.gz" do
-  source "http://prdownloads.sourceforge.net/sourceforge/nagiosplug/nagios-plugins-#{version}.tar.gz"
-  case version
-  when "1.4.16"
-    checksum "b0caf07e0084e9b7f10fdd71cbd3ebabcd85ad78df64da360b51233b0e73b2bd"
-  end
-end
-
-bash 'install_nagios_plugins' do
-  cwd '/usr/local/src/'
-  code <<-EOH
-    tar xf nagios-plugins-#{version}.tar.gz &&
-    cd nagios-plugins-#{version} &&
-    ./configure \
-        --sysconfdir=/etc/nagios \
-        --localstatedir=/var/nagios \
-        --with-nagios-user=nagios --with-nagios-group=nagios &&
-    make &&
-    make install
-  EOH
-  not_if { FileTest.exists?("/usr/local/nagios/libexec/check_ssh") }
-end
+package "nagios-plugins"
+package "nagios-plugins-http"
+package "nagios-plugins-disk"
+package "nagios-plugins-procs"
+package "nagios-plugins-users"
+package "nagios-plugins-ping"
+package "nagios-plugins-ssh"
+package "nagios-plugins-swap"
+package "nagios-plugins-load"
