@@ -38,7 +38,7 @@ bash 'install_nvm' do
 . /usr/local/nvm/nvm.sh
 EOF
   EOH
-  not_if { FileTest.exists?("/usr/local/nvm") }
+  creates "/usr/local/nvm"
 end
 
 bash 'install_nodejs' do
@@ -47,5 +47,5 @@ bash 'install_nodejs' do
     nvm install v#{version} &&
     nvm alias default #{version}
   EOH
-  not_if { FileTest.exists?("/usr/local/nvm/v#{version}") }
+  creates "/usr/local/nvm/v#{version}"
 end
