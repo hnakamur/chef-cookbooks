@@ -56,6 +56,8 @@ end
 remote_file "/usr/local/src/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
+  when "5.5.28-1"
+    checksum "99cde41f2664355535bb46eaf5b1ab5971067e2a2c6378a66c9d9c30b1ca3c6b"
   when "5.5.27-1"
     checksum "ee22c24f9c6a423884624adff4a982a49856c2fab610f5ec4ab9df7f90cbe6ff"
   when "5.5.25a-1"
@@ -66,8 +68,10 @@ end
 remote_file "/usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-shared-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
+  when "5.5.28-1"
+    checksum "4b37baaaa44161c98a0718ea8626d4c793cbe70562f5014c5941992b8ebc6861"
   when "5.5.27-1"
-    checksum ""
+    checksum "84badc2cadc9f8cbd691647aba58f94ab6e0cbcde4163185f166a92aa545551c"
   when "5.5.25a-1"
     checksum "eb80d2401b48a4139e98fc9f244374f5a0bf54f46ba6e1c7be6890fb961df969"
   end
@@ -76,6 +80,8 @@ end
 remote_file "/usr/local/src/MySQL-server-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-server-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
+  when "5.5.28-1"
+    checksum "266279ed0aeef33e476a2a9efe989dc928bb21e6eb6971265024444da1c328e3"
   when "5.5.27-1"
     checksum "fe7a5be7634bd10420f81ee176ab7b53662d76a8b813b7a2f563cc207413db32"
   when "5.5.25a-1"
@@ -87,6 +93,8 @@ end
 remote_file "/usr/local/src/MySQL-client-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-client-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
+  when "5.5.28-1"
+    checksum "4fb0261a4006f49d5e50db9509cd5232c0e4e7af7af60d69dda36f856fa2c3f0"
   when "5.5.27-1"
     checksum "76c13c73e29a3eccf6be008bc837b13c24a45736e4e0b7203e99140bbaa5914f"
   when "5.5.25a-1"
@@ -97,6 +105,8 @@ end
 remote_file "/usr/local/src/MySQL-devel-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-devel-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
+  when "5.5.28-1"
+    checksum "1a7e05b7f64a23b600b05afc4d3c74211477fcdfcf415476af5dd225bde13c8b"
   when "5.5.27-1"
     checksum "84badc2cadc9f8cbd691647aba58f94ab6e0cbcde4163185f166a92aa545551c"
   when "5.5.25a-1"
@@ -106,7 +116,8 @@ end
 
 # Install MySQL-shared-compat then unisntall mysql-libs.
 #
-# # rpm -q --provides MySQL-shared-compatlibmysqlclient.so.12()(64bit)  
+# # rpm -q --provides MySQL-shared-compat
+# libmysqlclient.so.12()(64bit)  
 # libmysqlclient.so.14()(64bit)  
 # libmysqlclient.so.14(libmysqlclient_14)(64bit)  
 # libmysqlclient.so.15()(64bit)  
@@ -121,10 +132,13 @@ end
 # libmysqlclient_r.so.16()(64bit)  
 # libmysqlclient_r.so.16(libmysqlclient_16)(64bit)  
 # mysql-libs  
-# MySQL-shared-compat = 5.5.25a-1.el6
-# MySQL-shared-compat(x86-64) = 5.5.25a-1.el6
-package "MySQL-shared-compat" do
-  source "/usr/local/src/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm"
+# MySQL-shared-compat = 5.5.28-1.el6
+# MySQL-shared-compat(x86-64) = 5.5.28-1.el6
+bash "install-MySQL-shared-compat" do
+  code <<-EOH
+   rpm -i /usr/local/src/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm
+  EOH
+  not_if 'rpm -q MySQL-shared-compat > /dev/null'
 end
 package "mysql-libs" do
   action :remove
@@ -137,21 +151,34 @@ package "mysql" do
   only_if 'rpm -q mysql > /dev/null'
 end
 
-package "MySQL-shared" do
-  source "/usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm"
+bash "install-MySQL-shared" do
+  code <<-EOH
+    rpm -i /usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm
+  EOH
+  not_if 'rpm -q MySQL-shared > /dev/null'
 end
 
-package "MySQL-server" do
-  source "/usr/local/src/MySQL-server-#{rpm_version}.el6.x86_64.rpm"
+bash "install-MySQL-server" do
+  code <<-EOH
+    if ! rpm -q MySQL-server; then
+      rpm -i /usr/local/src/MySQL-server-#{rpm_version}.el6.x86_64.rpm
+    fi
+  EOH
   only_if { install_type == 'server' }
 end
 
-package "MySQL-client" do
-  source "/usr/local/src/MySQL-client-#{rpm_version}.el6.x86_64.rpm"
+bash "install-MySQL-client" do
+  code <<-EOH
+    rpm -i /usr/local/src/MySQL-client-#{rpm_version}.el6.x86_64.rpm
+  EOH
+  not_if 'rpm -q MySQL-client > /dev/null'
 end
 
-package "MySQL-devel" do
-  source "/usr/local/src/MySQL-devel-#{rpm_version}.el6.x86_64.rpm"
+bash "install-MySQL-devel" do
+  code <<-EOH
+    rpm -i /usr/local/src/MySQL-devel-#{rpm_version}.el6.x86_64.rpm
+  EOH
+  not_if 'rpm -q MySQL-devel > /dev/null'
 end
 
 template '/etc/my.cnf' do
