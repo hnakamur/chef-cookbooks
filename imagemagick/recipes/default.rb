@@ -25,6 +25,7 @@
 #
 
 version = node[:imagemagick][:version]
+with_perl = node[:imagemagick][:with_perl]
 
 package "gcc"
 package "make"
@@ -57,7 +58,7 @@ bash "install-ImageMagick" do
     ./configure --libdir=/usr/local/lib64 --enable-shared \
       --disable-openmp --without-x \
       --with-png=yes --with-jpeg=yes --with-tiff=yes \
-      --with-fontconfig=yes --with-freetype=yes &&
+      --with-fontconfig=yes --with-freetype=yes --with-perl=#{with_perl} &&
     make &&
     make install
   EOH
