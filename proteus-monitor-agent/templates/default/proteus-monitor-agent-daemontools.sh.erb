@@ -1,0 +1,5 @@
+#!/bin/sh
+exec 2>&1
+. /usr/local/nvm/nvm.sh
+cd '<%= @install_dir %>'
+exec node agent.js
