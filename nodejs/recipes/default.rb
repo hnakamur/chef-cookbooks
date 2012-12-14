@@ -26,19 +26,16 @@
 
 version = node[:nodejs][:version]
 
-%w{ git make gcc gcc-c++ openssl-devel }.each do |pkg|
-  package pkg
-end
+package 'git'
+package 'make'
+package 'gcc'
+package 'gcc-c++'
+package 'openssl-devel'
 
-bash 'install_nvm' do
-  code <<-EOH
-    git clone https://github.com/creationix/nvm.git /usr/local/nvm &&
-    cat >> /root/.bashrc <<EOF
-
-. /usr/local/nvm/nvm.sh
-EOF
-  EOH
-  creates "/usr/local/nvm"
+git '/usr/local/nvm' do
+  repository "https://github.com/creationix/nvm.git"
+  reference "master"
+  action :sync
 end
 
 bash 'install_nodejs' do
@@ -48,4 +45,15 @@ bash 'install_nodejs' do
     nvm alias default #{version}
   EOH
   creates "/usr/local/nvm/v#{version}"
+end
+
+bash 'update-root-bashrc-for-nvm' do
+  code <<-EOH
+    if ! grep -qF '^. /usr/local/nvm/nvm.sh' /root/.bashrc; then
+      cat >> /root/.bashrc <<EOF
+
+. /usr/local/nvm/nvm.sh
+EOF
+    fi
+  EOH
 end
