@@ -134,7 +134,7 @@ MaxRequestsPerChild  0
 # prevent Apache from glomming onto all bound IP addresses (0.0.0.0)
 #
 #Listen 12.34.56.78:80
-Listen 127.0.0.1:<%= @port %>
+Listen 0.0.0.0:<%= @port %>
 
 #
 # Dynamic Shared Object (DSO) Support
@@ -226,7 +226,7 @@ Include conf.d/*.conf
 # information (ExtendedStatus On) or just basic information (ExtendedStatus
 # Off) when the "server-status" handler is called. The default is Off.
 #
-#ExtendedStatus On
+ExtendedStatus On
 
 #
 # If you wish httpd to run as a different user or group, you must run
@@ -925,6 +925,12 @@ BrowserMatch "^Dreamweaver-WebDAV-SCM1" redirect-carefully
 #    Deny from all
 #    Allow from .example.com
 #</Location>
+<Location /server-status>
+    SetHandler server-status
+    Order deny,allow
+    Deny from all
+    Allow from 127.0.0.1
+</Location>
 
 #
 # Allow remote server configuration reports, with the URL of
