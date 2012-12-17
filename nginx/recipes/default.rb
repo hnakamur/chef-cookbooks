@@ -53,7 +53,7 @@ end
 yum_package "httpd-tools"
 
 directory '/var/log/old/nginx' do
-  mode 0755
+  mode '0755'
   owner "nginx"
   group "nginx"
   recursive true
@@ -61,7 +61,7 @@ end
 
 template '/etc/logrotate.d/nginx' do
   source 'logrotate-nginx.erb'
-  mode 0644
+  mode '0644'
   owner "root"
   group "root"
 end
@@ -70,13 +70,13 @@ end
   directory "/var/cache/nginx/#{dir}" do
     owner 'nginx'
     group 'root'
-    mode 0700
+    mode '0700'
     recursive true
   end
 end
 
 directory "/etc/nginx" do
-  mode 0755
+  mode '0755'
   owner "nginx"
   group "nginx"
   recursive true
@@ -117,7 +117,7 @@ end
 directory "/var/www/html/_default/htdocs" do
   owner 'nginx'
   group 'nginx'
-  mode 0775
+  mode '0775'
   recursive true
 end
 
@@ -125,7 +125,7 @@ cookbook_file "/var/www/html/_default/htdocs/favicon.ico" do
   source "dummy_favicon.ico"
   owner 'nginx'
   group 'nginx'
-  mode 0644
+  mode '0644'
   not_if { FileTest.exists?("/var/www/html/_default/htdocs/favicon.ico") }
 end
 
@@ -133,7 +133,7 @@ template "/var/www/html/_default/htdocs/index.html" do
   source "index.html.erb"
   owner 'nginx'
   group 'nginx'
-  mode 0644
+  mode '0644'
   variables(
     :hostname => hostname
   )
@@ -144,7 +144,7 @@ end
   directory dir do
     owner 'nginx'
     group 'nginx'
-    mode 0775
+    mode '0775'
     recursive true
   end
 end
