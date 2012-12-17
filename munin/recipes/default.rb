@@ -24,9 +24,6 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-version = node[:munin][:version]
-generation_strategy = node[:munin][:generation_strategy]
-
 group 'munin' do
   gid node[:munin][:gid]
 end
@@ -38,66 +35,9 @@ user 'munin' do
   comment 'Munin networked resource monitoring tool'
 end
 
-%w{ make gcc }.each do |pkg|
-  package pkg
-end
-
-bash 'munin_install_perl_modules' do
-  code <<-EOH
-    cpanm Time::HiRes Storable Digest::MD5 HTML::Template Text::Balanced \
-      Params::Validate Net::SSLeay Getopt::Long \
-      File::Copy::Recursive CGI::Fast Log::Log4perl \
-      Log::Dispatch Log::Dispatch::FileRotate MIME::Lite \
-      Mail::Sendmail URI IO::Socket::INET6 FCGI
-      # These modules were not found.
-      # TimeDate IPC::Shareable Mail::Sender MailTools
-  EOH
-end
-
-remote_file "/usr/local/src/munin-#{version}.tar.gz" do
-  source "http://downloads.sourceforge.net/project/munin/stable/#{version}/munin-#{version}.tar.gz"
-  case version
-  when "2.0.4"
-    checksum "309388e3528b41d727cea01233f0d4f60714e2de443576e1c472e8a1dc81722c"
-  end
-end
-
-bash 'install_munin' do
-  file_dir = "#{File.dirname(File.dirname(__FILE__))}/files/default"
-  cwd '/usr/local/src/'
-  code <<-EOH
-    tar xf munin-#{version}.tar.gz &&
-    cd munin-#{version} &&
-    if [ ! -f Makefile.config.orig ]; then
-      patch -b -p1 < #{file_dir}/Makefile.config.patch
-    fi &&
-    make &&
-    make install &&
-    if [ #{generation_strategy} = 'cgi' ]; then
-      rm -rf /usr/local/munin/www/docs
-    fi &&
-    chmod 777 /var/log/munin /var/munin/cgi-tmp
-  EOH
-  not_if { FileTest.exists?("/usr/local/munin/lib/munin-asyncd") }
-end
-#    rm -rf /usr/local/munin/www/docs &&
-
-
-if generation_strategy == 'cron'
-  package 'cronie'
-
-  cookbook_file "/etc/cron.d/munin" do
-    source "munin.cron"
-    owner 'root'
-    group 'root'
-    mode '0644'
-    not_if { FileTest.exists?("/etc/cron.d/munin") }
-  end
-
-  service 'crond' do
-    action [:enable, :start]
-  end
-end
+package "munin"
+package "munin-cgi"
+package "mod_fcgid"
 
 bash 'create_munin-htpasswd' do
   code <<-EOH
@@ -106,20 +46,24 @@ bash 'create_munin-htpasswd' do
   not_if { FileTest.exists?("/etc/munin/munin-htpasswd") }
 end
 
+directory '/var/lib/munin/cgi-tmp' do
+  owner 'munin'
+  group 'munin'
+  mode '0777'
+end
+
 template '/etc/munin/munin.conf' do
   source 'munin.conf.erb'
   owner 'root'
   group 'root'
   mode '0644'
   variables(
-    :host_tree_configs => node[:munin][:host_tree_configs],
-    :generation_strategy => generation_strategy
+    :host_tree_configs => node[:munin][:host_tree_configs]
   )
 end
 
 cookbook_file '/etc/httpd/conf.d/munin.conf' do
-  source (generation_strategy == 'cgi' ?
-          'dynamic.apache.munin.conf' : 'static.apache.munin.conf')
+  source 'apache.munin.conf'
   owner 'root'
   group 'root'
   mode '0644'

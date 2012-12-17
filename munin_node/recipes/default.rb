@@ -24,10 +24,9 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-version = node[:munin][:version]
-enable_apache = node[:munin][:enable_apache]
-enable_nginx = node[:munin][:enable_nginx]
-enable_mysql = node[:munin][:enable_mysql]
+enable_apache = node[:munin_node][:enable_apache]
+enable_nginx = node[:munin_node][:enable_nginx]
+enable_mysql = node[:munin_node][:enable_mysql]
 apache_port = node[:apache][:port]
 nginx_port = node[:nginx][:http_port]
 
@@ -42,61 +41,19 @@ user 'munin' do
   comment 'Munin networked resource monitoring tool'
 end
 
-%w{ make gcc }.each do |pkg|
-  package pkg
-end
-
-bash 'munin_install_perl_modules' do
-  code <<-EOH
-    cpanm Net::Server Net::Server::Fork Time::HiRes Net::SNMP \
-      Crypt::DES Digest::SHA1 Digest::HMAC Net::SSLeay Net::CIDR
-  EOH
-end
-
-remote_file "/usr/local/src/munin-#{version}.tar.gz" do
-  source "http://downloads.sourceforge.net/project/munin/stable/#{version}/munin-#{version}.tar.gz"
-  case version
-  when "2.0.4"
-    checksum "309388e3528b41d727cea01233f0d4f60714e2de443576e1c472e8a1dc81722c"
-  end
-end
-
-bash 'install_munin_node' do
-  file_dir = "#{File.dirname(File.dirname(__FILE__))}/files/default"
-  cwd '/usr/local/src/'
-  code <<-EOH
-    tar xf munin-#{version}.tar.gz &&
-    cd munin-#{version} &&
-    if [ ! -f Makefile.config.orig ]; then
-      patch -b -p1 < #{file_dir}/Makefile.config.patch
-    fi &&
-    make &&
-    make install-common-prime install-node-prime install-plugins-prime &&
-    chmod 777 /var/log/munin &&
-    mkdir -p /usr/local/munin/www/docs &&
-    chown munin:munin /usr/local/munin/www/docs
-  EOH
-  not_if { FileTest.exists?("/usr/local/munin/sbin/munin-node") }
-end
-
+package "munin-node"
 
 ## apache plugins
 
-bash 'munin_install_perl_modules_for_apache_plugins' do
-  code <<-EOH
-    cpanm LWP::UserAgent
-  EOH
-  only_if { enable_apache }
-end
 bash 'make_apache_plugins_links' do
   code <<-EOH
-    ln -sf /usr/local/munin/lib/plugins/apache_* /etc/munin/plugins/
+    ln -sf /usr/share/munin/plugins/apache_* /etc/munin/plugins/
   EOH
   only_if { enable_apache }
 end
 bash 'remove_apache_plugins_links' do
   code <<-EOH
-    rm /etc/munin/plugins/apache_*
+    rm -f /etc/munin/plugins/apache_*
   EOH
   not_if { enable_apache }
 end
@@ -104,7 +61,7 @@ end
 
 ## nginx plugins
 
-cookbook_file '/etc/nginx/location.d/nginx_status.conf' do
+cookbook_file '/etc/nginx/conf.d/nginx_status.conf' do
   source 'nginx_status.conf'
   owner 'root'
   group 'root'
@@ -116,17 +73,20 @@ bash 'reload_nginx_for_nginx_status' do
     service nginx reload &&
     mkdir -p /root/.chef/munin_node/nginx_reloaded
   EOH
-  not_if { FileTest.exist?("/root/.chef/munin_node/nginx_reloaded") }
+  only_if do
+    enable_nginx &&
+    !FileTest.exist?("/root/.chef/munin_node/nginx_reloaded")
+  end
 end
 bash 'make_nginx_plugins_links' do
   code <<-EOH
-    ln -sf /usr/local/munin/lib/plugins/nginx_* /etc/munin/plugins/
+    ln -sf /usr/share/munin/plugins/nginx_* /etc/munin/plugins/
   EOH
   only_if { enable_nginx }
 end
 bash 'remove_nginx_plugins_links' do
   code <<-EOH
-    rm /etc/munin/plugins/nginx_*
+    rm -f /etc/munin/plugins/nginx_*
   EOH
   not_if { enable_nginx }
 end
@@ -134,7 +94,7 @@ end
 
 ## mysql plugins
 
-cookbook_file '/usr/local/munin/lib/plugins/mysql_connections' do
+cookbook_file '/usr/share/munin/plugins/mysql_connections' do
   source 'mysql_connections'
   owner 'root'
   group 'root'
@@ -142,14 +102,17 @@ cookbook_file '/usr/local/munin/lib/plugins/mysql_connections' do
   only_if { enable_mysql }
 end
 
-bash 'make_link_mysql_connections_plugin' do
+bash 'make_link_mysql_plugins' do
   code <<-EOH
-    ln -sf /usr/local/munin/lib/plugins/mysql_connections /etc/munin/plugins/
+    ln -sf /usr/share/munin/plugins/mysql_* /etc/munin/plugins/
   EOH
-  only_if do
-    enable_mysql && 
-    !FileTest.exists?("/etc/munin/plugins/mysql_connections")
-  end
+  only_if { enable_mysql }
+end
+bash 'remove_mysql_plugins_links' do
+  code <<-EOH
+    rm -f /etc/munin/plugins/mysql_*
+  EOH
+  not_if { enable_nginx }
 end
 
 bash 'create_munin_user_in_mysql' do
@@ -191,15 +154,8 @@ end
 
 bash 'install_munin_node_plugins' do
   code <<-EOH
-    perl /usr/local/munin/sbin/munin-node-configure --shell --families=contrib,auto | sh -x
+    perl /usr/munin-node-configure --shell --families=contrib,auto | sh -x
   EOH
-end
-
-template "/etc/init.d/munin-node" do
-  source "munin-node.erb"
-  owner 'root'
-  group 'root'
-  mode 0755
 end
 
 service 'munin-node' do

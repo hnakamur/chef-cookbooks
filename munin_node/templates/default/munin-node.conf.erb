@@ -25,14 +25,14 @@ ignore_file \.pod$
 # Set this if the client doesn't report the correct hostname when
 # telnetting to localhost, port 4949
 #
-#host_name db1.example.com
+#host_name buildvm-10.phx2.fedoraproject.org
 
 # A list of addresses that are allowed to connect.  This must be a
 # regular expression, since Net::Server does not understand CIDR-style
 # network notation unless the perl module Net::CIDR is installed.  You
 # may repeat the allow line as many times as you'd like
 
-#allow ^127\.0\.0\.1$
+allow ^127\.0\.0\.1$
 
 # If you have installed the Net::CIDR perl module, you can use one or more
 # cidr_allow and cidr_deny address/mask patterns.  A connecting client must
@@ -44,7 +44,6 @@ ignore_file \.pod$
 # cidr_allow 127.0.0.1/32
 # cidr_allow 192.0.2.0/24
 # cidr_deny  192.0.2.42/32
-
 <% for config in @cidr_configs %>
 <%= config %>
 <% end %>

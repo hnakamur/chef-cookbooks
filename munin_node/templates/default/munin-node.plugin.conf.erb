@@ -35,11 +35,12 @@ user root
 
 [postfix*]
 user root
+[diskstats]
+user munin
 
 [iostat_ios]
-user root
-[diskstats]
-user root
+user munin
+
 [munin_stats]
 user root
 <% if @enable_apache %>
