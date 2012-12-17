@@ -4,9 +4,6 @@ default['proteus-monitor-agent']['group'] = 'default'
 default['proteus-monitor-agent']['plugins'] = <<'EOS'
 {
     "stat": {},
-    "ps": {
-      "cassandra": "java.+cassandra\\.jar",
-      "agent": "node.+agent\\.js"
-    }
+    "ps": {}
   }
 EOS
