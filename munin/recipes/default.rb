@@ -58,8 +58,16 @@ template '/etc/munin/munin.conf' do
   group 'root'
   mode '0644'
   variables(
+    :data_retention_period_in_days => node[:munin][:data_retention_period_in_days],
     :host_tree_configs => node[:munin][:host_tree_configs]
   )
+end
+
+cookbook_file '/etc/cron.d/munin' do
+  source 'munin.cron'
+  owner 'root'
+  group 'root'
+  mode '0644'
 end
 
 cookbook_file '/etc/httpd/conf.d/munin.conf' do
