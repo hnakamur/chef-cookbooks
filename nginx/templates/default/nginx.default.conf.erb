@@ -1,0 +1,8 @@
+server {
+    listen       <%= @http_port %>;
+    server_name  _;
+
+<% for config in @default_server_configs.split("\n") %>
+    <%= config %>
+<% end %>
+}

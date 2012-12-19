@@ -1,16 +1,13 @@
 
 user  nginx;
-worker_processes  4;
+worker_processes  <%= @worker_processes %>;
 
-error_log  /var/log/nginx/error.log;
-#error_log  /var/log/nginx/log  notice;
-#error_log  /var/log/nginx/error.log  info;
-
+error_log  /var/log/nginx/error.log warn;
 pid        /var/run/nginx.pid;
 
 
 events {
-    worker_connections  2048;
+    worker_connections  <%= @worker_connections %>;
 }
 
 
@@ -27,43 +24,12 @@ http {
     sendfile        on;
     #tcp_nopush     on;
 
-    #keepalive_timeout  0;
-    keepalive_timeout  65;
+    keepalive_timeout  <%= @keepalive_timeout %>;
 
-    server_tokens off;
+    #gzip  on;
+<% for config in @http_configs.split("\n") %>
+    <%= config %>
+<% end %>
 
-    gzip  on;
-
-    server_names_hash_bucket_size 64;
-
-    client_max_body_size    100m;
-    client_body_buffer_size 128k;
-    proxy_set_header        Host $host;
-    proxy_set_header        X-Forwared-For $proxy_add_x_forwarded_for;
-    proxy_set_header        X-Protocol $http_x_protocol;
-    proxy_buffers           32 4k;
-    proxy_send_timeout      20m;
-    proxy_read_timeout      20m;
-
-    # HTTP server
-    #
-    server {
-        listen       <%= @http_port %>;
-        server_name  _;
-
-        location / {
-            root   /var/www/html/_default/htdocs;
-            index  index.html index.htm;
-
-            satisfy any;
-            auth_basic_user_file /var/www/html/_default/.htpasswd;
-            auth_basic "Authentication Required";
-            include /etc/nginx/allow_common_ip.conf;
-            deny all;
-        }
-
-        include /etc/nginx/location.d/*.conf;
-    }
-
-    include /etc/nginx/vhost.d/*.conf;
+    include /etc/nginx/conf.d/*.conf;
 }
