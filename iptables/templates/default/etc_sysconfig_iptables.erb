@@ -7,7 +7,7 @@
 -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 -A INPUT -p icmp -j ACCEPT
 -A INPUT -i lo -j ACCEPT
-<% for line in @accept_lines %>
+<% for line in @accept_lines.split("\n") %>
 <%= line %>
 <% end %>
 -A INPUT -j REJECT --reject-with icmp-host-prohibited
