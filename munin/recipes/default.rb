@@ -24,60 +24,85 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-group 'munin' do
+group "munin" do
   gid node[:munin][:gid]
 end
 
-user 'munin' do
+user "munin" do
   uid node[:munin][:uid]
-  gid 'munin'
-  shell '/sbin/nologin'
-  comment 'Munin networked resource monitoring tool'
+  gid "munin"
+  shell "/sbin/nologin"
+  comment "Munin networked resource monitoring tool"
 end
 
-package "munin"
-package "munin-cgi"
-package "mod_fcgid"
+yum_package "munin"
+yum_package "munin-cgi"
+yum_package "httpd-tools"
 
-bash 'create_munin-htpasswd' do
+bash "create_munin-htpasswd" do
   code <<-EOH
     htpasswd -b -c /etc/munin/munin-htpasswd "#{node[:munin][:web_interface_login]}" "#{node[:munin][:web_interface_password]}" 
   EOH
-  not_if { FileTest.exists?("/etc/munin/munin-htpasswd") }
+  creates "/etc/munin/munin-htpasswd"
 end
 
-directory '/var/lib/munin/cgi-tmp' do
-  owner 'munin'
-  group 'munin'
-  mode '0777'
+directory "/var/lib/munin/cgi-tmp" do
+  owner "munin"
+  group "munin"
+  mode "0777"
 end
 
-template '/etc/munin/munin.conf' do
-  source 'munin.conf.erb'
-  owner 'root'
-  group 'root'
-  mode '0644'
+template "/etc/munin/munin.conf" do
+  source "munin.conf.erb"
+  owner "root"
+  group "root"
+  mode "0644"
   variables(
     :data_retention_period_in_days => node[:munin][:data_retention_period_in_days],
     :host_tree_configs => node[:munin][:host_tree_configs]
   )
 end
 
-cookbook_file '/etc/cron.d/munin' do
-  source 'munin.cron'
-  owner 'root'
-  group 'root'
-  mode '0644'
+cookbook_file "/etc/cron.d/munin" do
+  source "munin.cron"
+  owner "root"
+  group "root"
+  mode "0644"
 end
 
-cookbook_file '/etc/httpd/conf.d/munin.conf' do
-  source 'apache.munin.conf'
-  owner 'root'
-  group 'root'
-  mode '0644'
+cookbook_file "/etc/nginx/conf/munin.conf" do
+  source "nginx.munin.conf"
+  owner "root"
+  group "root"
+  mode "0644"
 end
-bash 'munin_apache_graceful_restart' do
-  code <<-EOH
-    service httpd graceful
-  EOH
+service "nginx" do
+  action [:start, :reload]
+end
+
+directory "/var/log/munin" do
+  # munin-fcgi-html and munin-fcgi-graph writes logs here by nginx user .
+  owner "nginx"
+  group "munin"
+  mode "0777"
+end
+
+cookbook_file "/etc/init.d/munin-fcgi-html" do
+  source "munin-fcgi-html"
+  owner "root"
+  group "root"
+  mode "0755"
+end
+service "munin-fcgi-html" do
+  action [:enable, :start]
+end
+
+cookbook_file "/etc/init.d/munin-fcgi-graph" do
+  source "munin-fcgi-graph"
+  owner "root"
+  group "root"
+  mode "0755"
+end
+service "munin-fcgi-graph" do
+  action [:enable, :start]
 end

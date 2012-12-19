@@ -1,0 +1,111 @@
+#!/bin/sh
+#
+# munin-fcgi-graph   Start and stop munin graph FastCGI process
+#
+# chkconfig:   - 80 20
+# description: Spawn FastCGI scripts for creating munin graphs
+
+### BEGIN INIT INFO
+# Provides: 
+# Required-Start: $local_fs $network $syslog $remote_fs $named
+# Required-Stop: 
+# Should-Start: 
+# Should-Stop: 
+# Default-Start: 
+# Default-Stop: 0 1 2 3 4 5 6
+# Short-Description: Start and stop munin graph FastCGI process
+# Description:       Spawn FastCGI scripts for creating munin graphs
+### END INIT INFO
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+exec="/usr/bin/spawn-fcgi"
+prog="spawn-fcgi"
+PROG_ID="munin-fcgi-graph"
+PIDFILE=/var/run/munin/fcgi-graph.pid
+SOCKET=/var/run/munin/fcgi-graph.sock
+CGIFILE=/var/www/cgi-bin/munin-cgi-graph
+OPTIONS="-s $SOCKET -U nginx -u nginx -g nginx -P $PIDFILE -f $CGIFILE"
+
+lockfile=/var/lock/subsys/$PROG_ID
+
+start() {
+    [ -x $exec ] || exit 5
+    [ -f $config ] || exit 6
+    echo -n $"Starting $PROG_ID: "
+    # Just in case this is left over with wrong ownership
+    [ -n "${SOCKET}" -a -S "${SOCKET}" ] && rm -f ${SOCKET}
+    daemon --pidfile $PIDFILE "$exec $OPTIONS >/dev/null"
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && touch $lockfile
+    return $retval
+}
+
+stop() {
+    echo -n $"Stopping $PROG_ID: "
+    killproc -p $PIDFILE $prog
+    # Remove the socket in order to never leave it with wrong ownership
+    [ -n "${SOCKET}" -a -S "${SOCKET}" ] && rm -f ${SOCKET}
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && rm -f $lockfile $PIDFILE
+    return $retval
+}
+
+restart() {
+    stop
+    start
+}
+
+reload() {
+    restart
+}
+
+force_reload() {
+    restart
+}
+
+rh_status() {
+    # run checks to determine if the service is running or use generic status
+    status -p $PIDFILE $prog
+}
+
+rh_status_q() {
+    rh_status &>/dev/null
+}
+
+
+case "$1" in
+    start)
+        rh_status_q && exit 0
+        $1
+        ;;
+    stop)
+        rh_status_q || exit 0
+        $1
+        ;;
+    restart)
+        $1
+        ;;
+    reload)
+        rh_status_q || exit 7
+        $1
+        ;;
+    force-reload)
+        force_reload
+        ;;
+    status)
+        rh_status
+        ;;
+    condrestart|try-restart)
+        rh_status_q || exit 0
+        restart
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|reload|force-reload}"
+        exit 2
+esac
+exit $?
+
