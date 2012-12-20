@@ -38,6 +38,8 @@ package "freetype-devel"
 remote_file "/usr/local/src/ImageMagick-#{version}.tar.bz2" do
   source "http://www.imagemagick.org/download/ImageMagick-#{version}.tar.bz2"
   case version
+  when "6.8.1-0"
+    checksum "74e9ec3fa25d6b9206963feedc9b615396aaf68b6726d487dab80308a84a6880"
   when "6.8.0-8"
     checksum "d0a937d764554d88941bb6b98ed210b5397f6a3b294a2842cce07c58fafadcfa"
   end
