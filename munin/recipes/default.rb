@@ -63,6 +63,23 @@ template "/etc/munin/munin.conf" do
   )
 end
 
+directory "/var/log/munin" do
+  # munin-fcgi-html and munin-fcgi-graph writes logs here by nginx user.
+  # munin-cron write logs here by munin user.
+  owner "nginx"
+  group "munin"
+  mode "0777"
+end
+
+# this must be done before running fcgi scripts
+bash "munin-create-rrdtool-files" do
+  user "munin"
+  code <<-EOH
+    /usr/bin/munin-cron
+  EOH
+  creates "/var/lib/munin/htmlconf.storable"
+end
+
 cookbook_file "/etc/cron.d/munin" do
   source "munin.cron"
   owner "root"
@@ -78,13 +95,6 @@ cookbook_file "/etc/nginx/conf/munin.conf" do
 end
 service "nginx" do
   action [:start, :reload]
-end
-
-directory "/var/log/munin" do
-  # munin-fcgi-html and munin-fcgi-graph writes logs here by nginx user .
-  owner "nginx"
-  group "munin"
-  mode "0777"
 end
 
 cookbook_file "/etc/init.d/munin-fcgi-html" do

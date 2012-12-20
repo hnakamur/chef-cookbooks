@@ -103,7 +103,7 @@ graph_data_size custom <%= @data_retention_period_in_days.to_i * 24 * 60 %>
 #[buildvm-10.phx2.fedoraproject.org]
 #    address 127.0.0.1
 #    use_node_name yes
-<% for config in @host_tree_configs %>
+<% for config in @host_tree_configs.split("\n") %>
 <%= config %>
 <% end %>
 
