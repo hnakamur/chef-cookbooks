@@ -57,13 +57,26 @@ end
 bash "install-ImageMagick" do
   cwd "/usr/local/src/ImageMagick-#{version}"
   code <<-EOH
-    ./configure --libdir=/usr/local/lib64 --enable-shared \
-      --disable-openmp --without-x \
-      --with-png=yes --with-jpeg=yes --with-tiff=yes \
-      --with-fontconfig=yes --with-freetype=yes --with-perl=#{with_perl} &&
+    ./configure --with-perl=#{with_perl} &&
     make &&
-    make install
+    make install &&
+    echo /usr/local/lib > /etc/ld.so.conf.d/imagemagick.conf &&
+    ldconfig
   EOH
   creates "/usr/local/bin/convert"
 end
 
+# This is needed when you install rmagick gem.
+bash "symlink-ImageMagick-libraries" do
+  cwd "/usr/local/lib"
+  code <<-EOH
+    for n in MagickCore Magick++ MagicWand; do
+      ln -s lib${n}-Q16.a lib${n}.a
+      ln -s lib${n}-Q16.la lib${n}.la
+      ln -s lib${n}-Q16.so.7.0.0 lib${n}.so.7.0.0
+      ln -s lib${n}.so.7.0.0 lib${n}.so
+      ln -s lib${n}.so.7.0.0 lib${n}.so.7
+    done
+  EOH
+  creates "/usr/local/lib/libMagickCore.a"
+end
