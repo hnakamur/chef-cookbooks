@@ -28,7 +28,7 @@
   package pkg
 end
 
-bash 'install_daemontools-toaster' do
+bash 'install_daemontools' do
   cwd '/'
   code <<-EOH
     rpm -ivh http://mirrors.qmailtoaster.com/daemontools-toaster-0.76-1.3.6.src.rpm &&
@@ -45,4 +45,11 @@ template '/etc/init/svscanboot.conf' do
   owner 'root'
   group 'root'
   mode '644'
+end
+
+directory '/service/.disabled' do
+  owner 'root'
+  group 'root'
+  mode '755'
+  recursive true
 end
