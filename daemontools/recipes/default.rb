@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: daemontools-toaster
+# Cookbook Name:: daemontools
 # Recipe:: default
 #
 # Copyright 2012, Hiroaki Nakamura
