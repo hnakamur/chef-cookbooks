@@ -28,39 +28,69 @@ remote_file "/usr/local/src/remi-release-6.rpm" do
   source "http://remi-mirror.dedipower.com/enterprise/remi-release-6.rpm"
 end
 
-bash "exclude-php-in-Base-repo" do
-  code <<-EOH
-    TMPFILE=/tmp/CentOS-Base.repo.$$ &&
-    awk -f #{File.dirname(File.dirname(__FILE__))}/files/default/exclude-pkg-in-CentOS-Base.awk pkg=php /etc/yum.repos.d/CentOS-Base.repo > $TMPFILE &&
-    cp $TMPFILE /etc/yum.repos.d/CentOS-Base.repo
-  EOH
-  not_if "grep -q '^exclude=.*php' /etc/yum.repos.d/CentOS-Base.repo"
-end
-
 package "remi-release" do
   source "/usr/local/src/remi-release-6.rpm"
 end
 
-bash "enable-remi-test" do
-  code <<-EOH
-    TMPFILE=/tmp/remi.repo.$$ &&
-    awk -f #{File.dirname(File.dirname(__FILE__))}/files/default/enable-remi-test.awk /etc/yum.repos.d/remi.repo > $TMPFILE &&
-    cp $TMPFILE /etc/yum.repos.d/remi.repo
+bash "enable-remi" do
+  code <<-'EOH'
+    f=/etc/yum.repos.d/remi.repo
+    enabled=`sed -ne '/^\[remi\]/,/^$/{/^enabled=/{s/enabled=//;p;q}}' $f`
+    if [ "$enabled" = 0 ]; then
+      sed -i -e '/^\[remi\]/,/^$/s/enabled=0/enabled=1/' $f
+    fi
   EOH
-  only_if "awk -f #{File.dirname(File.dirname(__FILE__))}/files/default/check-enabled-remi-test.awk /etc/yum.repos.d/remi.repo"
 end
 
-%w{ php php-devel }.each do |pkg|
-  package pkg
+bash "exclude-php-in-Base-repo" do
+  code <<-'EOH'
+f=/etc/yum.repos.d/CentOS-Base.repo
+php_excluded=`sed -ne '/^\[base\]/,/^$/{
+/^exclude=.*php/{c\
+1
+p;q}
+/^exclude=/{c\
+0
+p;q}
+}' $f`
+case $php_excluded in
+1) # already excluded, do nothing
+  ;;
+0) # modify exclude line
+  sed -i -e '/^\[base\]/,/^$/{
+s/exclude=.*/&,php\*/
+}' $f
+  ;;
+*) # add exclude line
+  sed -i -e '/^\[base\]/,/^$/{
+/^$/i\
+exclude=php*
+}' $f
+  ;;
+esac
+  EOH
 end
 
-template '/etc/php.ini' do
-  require "#{File.dirname(File.dirname(__FILE__))}/files/default/text_file.rb"
-  file = TextFile.load "/etc/sysconfig/clock"
-  timezone = /^ZONE="([^"]*)"/.match(file.lines[0]).to_a[1]
+yum_package "php" do
+  action :install
+  flush_cache [ :before ]
+end
 
-  source 'php.ini.erb'
-  variables(
-    :date_timezone => timezone
-  )
+yum_package "php-devel"
+yum_package "php-fpm"
+yum_package "php-intl"
+yum_package "php-mbstring"
+yum_package "php-mysql"
+yum_package "php-pdo"
+yum_package "php-pear"
+yum_package "php-pecl-apc"
+yum_package "php-process"
+yum_package "php-soap"
+yum_package "php-xml"
+
+bash "modify-php.ini" do
+  code <<-'EOH'
+    zone=`sed -ne '/^ZONE=/{s/ZONE="\([^"]*\)"/\1/;p;q}' /etc/sysconfig/clock`
+    sed -i -e 's:^;\(date\.timezone =\).*:\1 '$zone':' /etc/php.ini
+  EOH
 end
