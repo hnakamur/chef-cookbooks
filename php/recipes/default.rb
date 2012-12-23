@@ -27,7 +27,6 @@
 bash "install-remi" do
   code <<-'EOH'
 if ! rpm -q "remi-release" > /dev/null; then
-  echo not installed
   rpm -i http://remi-mirror.dedipower.com/enterprise/remi-release-6.rpm
 fi
   EOH
@@ -38,7 +37,7 @@ bash "enable-remi" do
 f=/etc/yum.repos.d/remi.repo
 enabled=`sed -ne '/^\[remi\]/,/^$/{/^enabled=/{s/enabled=//;p;q}}' $f`
 if [ "$enabled" = 0 ]; then
-  sed -i -e '/^\[remi\]/,/^$/s/enabled=0/enabled=1/' $f
+  sed -i.bak -e '/^\[remi\]/,/^$/s/enabled=0/enabled=1/' $f
 fi
   EOH
 end
@@ -58,12 +57,12 @@ case $php_excluded in
 1) # already excluded, do nothing
   ;;
 0) # modify exclude line
-  sed -i -e '/^\[base\]/,/^$/{
+  sed -i.bak -e '/^\[base\]/,/^$/{
 s/exclude=.*/&,php\*/
 }' $f
   ;;
 *) # add exclude line
-  sed -i -e '/^\[base\]/,/^$/{
+  sed -i.bak -e '/^\[base\]/,/^$/{
 /^$/i\
 exclude=php*
 }' $f
@@ -92,7 +91,10 @@ yum_package "php-xml"
 bash "modify-php.ini" do
   code <<-'EOH'
 zone=`sed -ne '/^ZONE=/{s/ZONE="\([^"]*\)"/\1/;p;q}' /etc/sysconfig/clock`
-sed -i -e 's|^;\(date\.timezone =\).*|\1 '$zone'|' /etc/php.ini
+f=/etc/php.ini
+if ! grep -q "^date\.timezone = $zone" $f; then
+  sed -i.bak -e 's|^;*\(date\.timezone =\).*|\1 '$zone'|' $f
+fi
   EOH
 end
 
@@ -100,7 +102,7 @@ bash "config-php-fpm-for-nginx" do
   code <<-'EOH'
 f=/etc/php-fpm.d/www.conf
 if ! grep -q '^user = nginx' $f; then
-  sed -i -e '
+  sed -i.bak -e '
 s|^listen = .*|listen = /var/run/php-fcgi.sock|
 s|^user = .*|user = nginx|
 s|^group = .*|group = nginx|
