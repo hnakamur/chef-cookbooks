@@ -25,15 +25,19 @@
 #
 
 version = node[:haproxy][:version]
+major_ver = version.sub(/[-.][^-.]*$/, '')
 
-%w{ make gcc }.each do |pkg|
-  package pkg
-end
+package "make"
+package "gcc"
 
 remote_file "/usr/local/src/haproxy-#{version}.tar.gz" do
-  dir = version.sub(/\.\d+$/, '')
-  source "http://haproxy.1wt.eu/download/#{dir}/src/haproxy-#{version}.tar.gz"
+  dev = version =~ /dev/ ? 'devel/' : ''
+  source "http://haproxy.1wt.eu/download/#{major_ver}/src/#{dev}haproxy-#{version}.tar.gz"
   case version
+  when "1.5-dev15"
+    checksum "417d746c6ff179b290410b8640b699a5f2b98cdb916ace4656d7d1ea79880047"
+  when "1.4.22"
+    checksum "ba221b3eaa4d71233230b156c3000f5c2bd4dace94d9266235517fe42f917fc6"
   when "1.4.21"
     checksum "6e28575f0492def31c331faf9ead08225dd62153334880688f8a7c477c8c31a4"
   end
@@ -44,11 +48,10 @@ bash 'install_haproxy' do
   code <<-EOH
     tar xf haproxy-#{version}.tar.gz &&
     cd haproxy-#{version} &&
-    make TARGET=linux26 CPU=x86_64 USE_PCRE=1 \
-      SPEC_CFLAGS="-O2 -fno-strict-aliasing" &&
+    make TARGET=linux2628 CPU=native USE_STATIC_PCRE=1 &&
     make install
   EOH
-  not_if { FileTest.exists?("/usr/local/sbin/haproxy") }
+  creates "/usr/local/sbin/haproxy"
 end
 
 directory '/etc/haproxy' do
