@@ -1,1 +1,1 @@
-default.pcre.version = "8.31"
+default.pcre.version = "8.32"
