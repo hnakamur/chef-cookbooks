@@ -29,6 +29,13 @@ major_ver = version.sub(/[-.][^-.]*$/, '')
 
 package "make"
 package "gcc"
+if major_ver == "1.5"
+  ssl_options = "USE_OPENSSL=1 USE_ZLIB=1"
+  package "openssl-devel"
+  package "zlib-devel"
+else
+  ssl_options = ""
+end
 
 remote_file "/usr/local/src/haproxy-#{version}.tar.gz" do
   dev = version =~ /dev/ ? 'devel/' : ''
@@ -48,7 +55,7 @@ bash 'install_haproxy' do
   code <<-EOH
     tar xf haproxy-#{version}.tar.gz &&
     cd haproxy-#{version} &&
-    make TARGET=linux2628 CPU=native USE_STATIC_PCRE=1 &&
+    make TARGET=linux2628 CPU=native USE_STATIC_PCRE=1 #{ssl_options} &&
     make install
   EOH
   creates "/usr/local/sbin/haproxy"
