@@ -24,21 +24,22 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-remote_file "/usr/local/src/remi-release-6.rpm" do
-  source "http://remi-mirror.dedipower.com/enterprise/remi-release-6.rpm"
-end
-
-package "remi-release" do
-  source "/usr/local/src/remi-release-6.rpm"
+bash "install-remi" do
+  code <<-'EOH'
+if ! rpm -q "remi-release" > /dev/null; then
+  echo not installed
+  rpm -i http://remi-mirror.dedipower.com/enterprise/remi-release-6.rpm
+fi
+  EOH
 end
 
 bash "enable-remi" do
   code <<-'EOH'
-    f=/etc/yum.repos.d/remi.repo
-    enabled=`sed -ne '/^\[remi\]/,/^$/{/^enabled=/{s/enabled=//;p;q}}' $f`
-    if [ "$enabled" = 0 ]; then
-      sed -i -e '/^\[remi\]/,/^$/s/enabled=0/enabled=1/' $f
-    fi
+f=/etc/yum.repos.d/remi.repo
+enabled=`sed -ne '/^\[remi\]/,/^$/{/^enabled=/{s/enabled=//;p;q}}' $f`
+if [ "$enabled" = 0 ]; then
+  sed -i -e '/^\[remi\]/,/^$/s/enabled=0/enabled=1/' $f
+fi
   EOH
 end
 
@@ -73,7 +74,7 @@ end
 
 yum_package "php" do
   action :install
-  flush_cache [ :before ]
+  flush_cache [:before]
 end
 
 yum_package "php-devel"
@@ -90,7 +91,24 @@ yum_package "php-xml"
 
 bash "modify-php.ini" do
   code <<-'EOH'
-    zone=`sed -ne '/^ZONE=/{s/ZONE="\([^"]*\)"/\1/;p;q}' /etc/sysconfig/clock`
-    sed -i -e 's:^;\(date\.timezone =\).*:\1 '$zone':' /etc/php.ini
+zone=`sed -ne '/^ZONE=/{s/ZONE="\([^"]*\)"/\1/;p;q}' /etc/sysconfig/clock`
+sed -i -e 's|^;\(date\.timezone =\).*|\1 '$zone'|' /etc/php.ini
   EOH
+end
+
+bash "config-php-fpm-for-nginx" do
+  code <<-'EOH'
+f=/etc/php-fpm.d/www.conf
+if ! grep -q '^user = nginx' $f; then
+  sed -i -e '
+s|^listen = .*|listen = /var/run/php-fcgi.sock|
+s|^user = .*|user = nginx|
+s|^group = .*|group = nginx|
+' $f
+fi
+  EOH
+end
+
+service "php-fpm" do
+  action [:enable, :start]
 end
