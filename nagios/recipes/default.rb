@@ -24,12 +24,12 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-# group 'apache' must be created before creating group 'nagios'.
-package "httpd"
+login = node.nagios.web_interface_login
+password = node.nagios.web_interface_password
 
 group 'nagios' do
   gid node[:nagios][:gid]
-  members ['apache']
+  members ['nginx']
 end
 
 user 'nagios' do
@@ -38,11 +38,24 @@ user 'nagios' do
   comment 'Nagios monitoring tool'
 end
 
-package "nagios"
+yum_package "nagios"
+
+bash 'make-nagios-files-readable-to-nginx' do
+  # change owner from root:apache to root:nginx
+  code <<-EOH
+    chown root:nginx \
+      /etc/nagios/passwd \
+      /usr/share/nagios/html/config.inc.php
+  EOH
+end
 
 bash 'create_passwd' do
   code <<-EOH
-    htpasswd -b -c /etc/nagios/passwd "#{node[:nagios][:web_interface_login]}" "#{node[:nagios][:web_interface_password]}" 
+f=/etc/nagios/passwd
+if ! grep -qF '#{login}'; then
+  htpasswd -b -c $f '#{login}' '#{password}'
+  chown root:nginx $f
+fi
   EOH
 end
 
@@ -124,11 +137,27 @@ service 'nagios' do
   action [:enable, :start]
 end
 
-cookbook_file '/etc/httpd/conf.d/nagios.conf' do
-  source 'apache.nagios.conf'
-end
-bash 'apache_graceful_restart' do
-  code <<-EOH
-    service httpd graceful
+yum_package "spawn-fcgi"
+
+bash "config-spawn-fcgi-for-nagios" do
+  code <<-'EOH'
+    f=/etc/sysconfig/spawn-fcgi
+    if ! grep -qF '^SOCKET=/var/run/fcgiwrap.sock' $f; then
+      cat >> $f <<'EOF'
+SOCKET=/var/run/fcgiwrap.sock
+OPTIONS="-u nginx -g nginx -s $SOCKET -P /var/run/spawn-fcgi.pid -f /usr/local/sbin/fcgiwrap"
+EOF
+    fi
   EOH
+end
+
+service "spawn-fcgi" do
+  action [:enable, :start]
+end
+
+cookbook_file '/etc/nginx/conf/nagios.conf' do
+  source 'nginx.nagios.conf'
+end
+service "nginx" do
+  action [:start, :reload]
 end
