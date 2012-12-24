@@ -70,7 +70,8 @@ end
 template '/etc/haproxy/haproxy.cfg' do
   source 'haproxy.cfg.erb'
   variables(
-    :nginx_http_port => node[:nginx][:http_port]
+    :ssl_crt => node.haproxy.ssl_crt,
+    :nginx_socket => node.haproxy.nginx_socket
   )
   not_if { FileTest.exists?("/etc/haproxy/haproxy.cfg") }
 end
