@@ -24,15 +24,24 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+strength = node.ssl_certificate.strength
+serial = node.ssl_certificate.serial
+days = node.ssl_certificate.days
+subject = node.ssl_certificate.subject
+crt_file = node.ssl_certificate.crt_file
+key_file = node.ssl_certificate.key_file
+crt_and_key_file = node.ssl_certificate.crt_and_key_file
+
 bash "create_self_signed_cerficiate" do
   code <<-EOH
-    openssl req -new -newkey rsa:2048 -x509 -nodes \
-      -set_serial #{node[:ssl_certificate][:serial]} \
-      -days #{node[:ssl_certificate][:days]} \
-      -subj "#{node[:ssl_certificate][:subject]}" \
-      -out #{node[:ssl_certificate][:crt_file]} \
-      -keyout #{node[:ssl_certificate][:key_file]} &&
-    chmod 400 #{node[:ssl_certificate][:key_file]}
+    openssl req -new -newkey rsa:#{strength} -sha1 -x509 -nodes \
+      -set_serial #{serial} \
+      -days #{days} \
+      -subj "#{subject}" \
+      -out "#{crt_file}" \
+      -keyout "#{key_file}" &&
+    cat "#{crt_file}" "#{key_file}" >> "#{crt_and_key_file}" &&
+    chmod 400 "#{key_file}" "#{crt_and_key_file}"
   EOH
-  not_if { FileTest.exists?(node[:ssl_certificate][:crt_file]) }
+  creates crt_and_key_file
 end
