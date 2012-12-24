@@ -158,6 +158,6 @@ end
 cookbook_file '/etc/nginx/conf/nagios.conf' do
   source 'nginx.nagios.conf'
 end
-service "nginx" do
-  action [:start, :reload]
-end
+#service "nginx" do
+#  action [:start, :reload]
+#end
