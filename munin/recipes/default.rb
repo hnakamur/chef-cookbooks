@@ -93,9 +93,9 @@ cookbook_file "/etc/nginx/conf/munin.conf" do
   group "root"
   mode "0644"
 end
-service "nginx" do
-  action [:start, :reload]
-end
+#service "nginx" do
+#  action [:start, :reload]
+#end
 
 cookbook_file "/etc/init.d/munin-fcgi-html" do
   source "munin-fcgi-html"
