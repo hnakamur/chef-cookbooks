@@ -82,6 +82,13 @@ directory "/etc/nginx/conf.d" do
   recursive true
 end
 
+directory "/etc/nginx/default.d" do
+  mode "0755"
+  owner "root"
+  group "root"
+  recursive true
+end
+
 directory "/etc/nginx/conf" do
   mode "0755"
   owner "root"
@@ -153,5 +160,5 @@ end
 
 service "nginx" do
   supports :restart => true, :reload => true
-  action (node.nginx.start_server ? [:enable, :start] : [:enable])
+  action [:enable, :start]
 end

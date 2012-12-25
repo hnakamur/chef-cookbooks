@@ -87,15 +87,15 @@ cookbook_file "/etc/cron.d/munin" do
   mode "0644"
 end
 
-cookbook_file "/etc/nginx/conf/munin.conf" do
+cookbook_file "/etc/nginx/default.d/munin.conf" do
   source "nginx.munin.conf"
   owner "root"
   group "root"
   mode "0644"
 end
-#service "nginx" do
-#  action [:start, :reload]
-#end
+service "nginx" do
+  action [:reload]
+end
 
 cookbook_file "/etc/init.d/munin-fcgi-html" do
   source "munin-fcgi-html"

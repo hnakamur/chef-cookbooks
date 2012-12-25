@@ -2,7 +2,25 @@ server {
     listen       <%= @http_port %>;
     server_name  _;
 
-<% for config in @default_server_configs.split("\n") %>
-    <%= config %>
-<% end %>
+    location / {
+        root   /var/www/html/_default/htdocs;
+        index  index.html index.htm;
+    
+        satisfy any;
+        auth_basic_user_file /var/www/html/_default/.htpasswd;
+        auth_basic "Authentication Required";
+        include conf/allow_common_ip.conf;
+        deny all;
+    }
+    
+    #error_page  404              /404.html;
+    
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    include default.d/*.conf;
 }

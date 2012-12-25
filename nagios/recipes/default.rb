@@ -155,9 +155,9 @@ service "spawn-fcgi" do
   action [:enable, :start]
 end
 
-cookbook_file '/etc/nginx/conf/nagios.conf' do
+cookbook_file '/etc/nginx/default.d/nagios.conf' do
   source 'nginx.nagios.conf'
 end
-#service "nginx" do
-#  action [:start, :reload]
-#end
+service "nginx" do
+  action [:reload]
+end
