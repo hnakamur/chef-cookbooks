@@ -70,7 +70,7 @@ end
 bash "symlink-ImageMagick-libraries" do
   cwd "/usr/local/lib"
   code <<-EOH
-    for n in MagickCore Magick++ MagicWand; do
+    for n in MagickCore Magick++ MagickWand; do
       ln -s lib${n}-Q16.a lib${n}.a
       ln -s lib${n}-Q16.la lib${n}.la
       ln -s lib${n}-Q16.so.7.0.0 lib${n}.so.7.0.0
