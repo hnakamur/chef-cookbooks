@@ -61,7 +61,7 @@ end
 
 ## nginx plugins
 
-cookbook_file '/etc/nginx/conf.d/nginx_status.conf' do
+cookbook_file '/etc/nginx/default.d/nginx_status.conf' do
   source 'nginx_status.conf'
   owner 'root'
   group 'root'
