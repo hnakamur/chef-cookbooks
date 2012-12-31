@@ -1,4 +1,4 @@
-default.haproxy.version = "1.5-dev15"
+default.haproxy.version = "1.5-dev17"
 
 # concat certificate and key file.
 default.haproxy.ssl_crt = "/etc/pki/tls/private/localhost.crt_and_key"

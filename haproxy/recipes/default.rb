@@ -41,6 +41,8 @@ remote_file "/usr/local/src/haproxy-#{version}.tar.gz" do
   dev = version =~ /dev/ ? 'devel/' : ''
   source "http://haproxy.1wt.eu/download/#{major_ver}/src/#{dev}haproxy-#{version}.tar.gz"
   case version
+  when "1.5-dev17"
+    checksum "d0371b2eb78dff419e2bf642ffab533c3f13e7216bdb92ba08f65a5e4652e7db"
   when "1.5-dev15"
     checksum "417d746c6ff179b290410b8640b699a5f2b98cdb916ace4656d7d1ea79880047"
   when "1.4.22"
