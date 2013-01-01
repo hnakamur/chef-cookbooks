@@ -176,6 +176,13 @@ end
 #  not_if 'rpm -q MySQL-shared > /dev/null'
 #end
 
+bash "create-mysqlclient_r.so-symlink" do
+  code <<-EOH
+ln -s libmysqlclient_r.so.16 /usr/lib64/libmysqlclient_r.so
+  EOH
+  creates "/usr/lib64/libmysqlclient_r.so"
+end
+
 bash "install-MySQL-server" do
   code <<-EOH
     if ! rpm -q MySQL-server; then
