@@ -24,6 +24,9 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+login = node.munin.web_interface_login
+password = node.munin.web_interface_password
+
 group "munin" do
   gid node[:munin][:gid]
 end
@@ -41,14 +44,21 @@ yum_package "httpd-tools"
 
 bash "create_munin-htpasswd" do
   code <<-EOH
-    htpasswd -b -c /etc/munin/munin-htpasswd "#{node[:munin][:web_interface_login]}" "#{node[:munin][:web_interface_password]}" 
+    htpasswd -b -c /etc/munin/munin-htpasswd "#{login}" "#{password}" 
   EOH
-  creates "/etc/munin/munin-htpasswd"
+  # /etc/munin/munin-htpassword is contained in munin-cgi yum package.
+  #creates "/etc/munin/munin-htpasswd"
 end
 
 directory "/var/lib/munin/cgi-tmp" do
   owner "munin"
   group "munin"
+  mode "0777"
+end
+
+directory "/var/lib/munin/cgi-tmp/munin-cgi-graph" do
+  owner "nginx"
+  group "nginx"
   mode "0777"
 end
 
@@ -72,10 +82,17 @@ directory "/var/log/munin" do
 end
 
 # this must be done before running fcgi scripts
+#
+# This fails for munin 2.0.9-3.el3.
+# In that case, please run commands below by hand.
+#
+# service munin-node start
+# su - munin --shell=/bin/bash /usr/bin/munin-cron
+#
+# Then rerun chef-solo to do the rest of recipes.
 bash "munin-create-rrdtool-files" do
-  user "munin"
   code <<-EOH
-    /usr/bin/munin-cron
+    su - munin --shell=/bin/bash /usr/bin/munin-cron
   EOH
   creates "/var/lib/munin/htmlconf.storable"
 end

@@ -154,7 +154,7 @@ end
 
 bash 'install_munin_node_plugins' do
   code <<-EOH
-    perl /usr/munin-node-configure --shell --families=contrib,auto | sh -x
+    perl /usr/sbin/munin-node-configure --shell --families=contrib,auto | sh -x
   EOH
 end
 
