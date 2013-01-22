@@ -56,8 +56,8 @@ end
 remote_file "/usr/local/src/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
-  when "5.5.29-1"
-    checksum "c32e491e3167815a373eeaadaca0897148e7507aa1a92f12f8eeb9c08698b954"
+  when "5.5.29-2"
+    checksum "1466e18edc20c13d9a6ce39290a28f0b1f9c8d5920775168aa55615eb4b59d25"
   when "5.5.28-1"
     checksum "99cde41f2664355535bb46eaf5b1ab5971067e2a2c6378a66c9d9c30b1ca3c6b"
   when "5.5.27-1"
@@ -70,8 +70,8 @@ end
 remote_file "/usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-shared-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
-  when "5.5.29-1"
-    checksum "81bd7d1f17f7c025ee4c37bbf64ea38f8fb443fe137e558a48316117eb65c827"
+  when "5.5.29-2"
+    checksum "5e9c4653edde22371c552d2e539b51d36a03fd4ecaae9009e5f5a234e5a7f6f4"
   when "5.5.28-1"
     checksum "4b37baaaa44161c98a0718ea8626d4c793cbe70562f5014c5941992b8ebc6861"
   when "5.5.27-1"
@@ -84,8 +84,8 @@ end
 remote_file "/usr/local/src/MySQL-server-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-server-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
-  when "5.5.29-1"
-    checksum "bce0132e86a23b19e1ba229e0411de39cdbde538f922c244d056ecaf3f054cb1"
+  when "5.5.29-2"
+    checksum "820d48b7c30125cbc7178079df82b1ceadfbe21f7e7f3d4d5f6dd6f6a7bde868"
   when "5.5.28-1"
     checksum "266279ed0aeef33e476a2a9efe989dc928bb21e6eb6971265024444da1c328e3"
   when "5.5.27-1"
@@ -99,8 +99,8 @@ end
 remote_file "/usr/local/src/MySQL-client-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-client-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
-  when "5.5.29-1"
-    checksum "b28d402b8962638ec4c3373a5449814af817e14fbc9b063ece082d966ca4859e"
+  when "5.5.29-2"
+    checksum "66f4227c751098a71a222c5b8c32bc5f834b901e5dd255b113490221755488d1"
   when "5.5.28-1"
     checksum "4fb0261a4006f49d5e50db9509cd5232c0e4e7af7af60d69dda36f856fa2c3f0"
   when "5.5.27-1"
@@ -113,8 +113,8 @@ end
 remote_file "/usr/local/src/MySQL-devel-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-devel-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
-  when "5.5.29-1"
-    checksum "76defd44a97f81279881c3f0753f3bab3aed4148906735ddf72ae6ce5f95a9f1"
+  when "5.5.29-2"
+    checksum "c82a1fd6a54ecbfc461ad899c9fa1813c41817f84074cb3623aab20dda52b182"
   when "5.5.28-1"
     checksum "1a7e05b7f64a23b600b05afc4d3c74211477fcdfcf415476af5dd225bde13c8b"
   when "5.5.27-1"
@@ -161,26 +161,11 @@ package "mysql" do
   only_if 'rpm -q mysql > /dev/null'
 end
 
-# As of 5.5.29-1, we cannot install both MySQL-shared and MySQL-shared-compat
-# at the same time due to the error below.
-# ---
-# STDERR: error: Failed dependencies:
-#        mysql-libs conflicts with MySQL-shared-5.5.29-1.el6.x86_64
-# ---
-# Since postfix needs mysql-libs, which is provided by MySQL-shared-compat,
-# So we are forced not to install MySQL-shared
-#bash "install-MySQL-shared" do
-#  code <<-EOH
-#    rpm -i /usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm
-#  EOH
-#  not_if 'rpm -q MySQL-shared > /dev/null'
-#end
-
-bash "create-mysqlclient_r.so-symlink" do
+bash "install-MySQL-shared" do
   code <<-EOH
-ln -s libmysqlclient_r.so.16 /usr/lib64/libmysqlclient_r.so
+    rpm -i /usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm
   EOH
-  creates "/usr/lib64/libmysqlclient_r.so"
+  not_if 'rpm -q MySQL-shared > /dev/null'
 end
 
 bash "install-MySQL-server" do

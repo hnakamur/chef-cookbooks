@@ -2,7 +2,7 @@
 default.mysql.install_type = "server"
 
 default.mysql.version = "5.5"
-default.mysql.rpm_version = "5.5.29-1"
+default.mysql.rpm_version = "5.5.29-2"
 
 default.mysql.gid = 27
 default.mysql.uid = 27
