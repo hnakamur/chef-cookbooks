@@ -28,13 +28,33 @@ version = node[:mysql][:version]
 rpm_version = node[:mysql][:rpm_version]
 install_type = node[:mysql][:install_type]
 
-bash "exclude-mysql-in-Base-repo" do
+bash "exclude-mysql-in-yum.conf" do
   code <<-EOH
-    TMPFILE=/tmp/CentOS-Base.repo.$$ &&
-    awk -f #{File.dirname(File.dirname(__FILE__))}/files/default/exclude-pkg-in-CentOS-Base.awk pkg=mysql /etc/yum.repos.d/CentOS-Base.repo > $TMPFILE &&
-    cp $TMPFILE /etc/yum.repos.d/CentOS-Base.repo
+f=/etc/yum.conf
+mysql_excluded=`sed -ne '/^\[main\]/,/^$/{
+/^exclude=.*mysql\*/{c\
+1
+p;q}
+/^exclude=/{c\
+0
+p;q}
+}' $f`
+case $mysql_excluded in
+1) # already excluded, do nothing
+  ;;
+0) # modify exclude line
+  sed -i -e '/^\[main\]/,/^$/{
+s/exclude=.*/& mysql\*/ 
+}' $f
+  ;;
+*) # add exclude line
+  sed -i -e '/^\[main\]/,/^$/{
+/^$/i\
+exclude=mysql\*
+}' $f
+  ;;
+esac
   EOH
-  not_if "grep -q '^exclude=.*mysql' /etc/yum.repos.d/CentOS-Base.repo"
 end
 
 # This cookbook assumes rpm_version >= 5.5.6
