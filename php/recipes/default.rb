@@ -77,7 +77,6 @@ yum_package "php" do
 end
 
 yum_package "php-devel"
-yum_package "php-fpm"
 yum_package "php-intl"
 yum_package "php-mbstring"
 yum_package "php-mysql"
@@ -96,21 +95,4 @@ if ! grep -q "^date\.timezone = $zone" $f; then
   sed -i.bak -e 's|^;*\(date\.timezone =\).*|\1 '$zone'|' $f
 fi
   EOH
-end
-
-bash "config-php-fpm-for-nginx" do
-  code <<-'EOH'
-f=/etc/php-fpm.d/www.conf
-if ! grep -q '^user = nginx' $f; then
-  sed -i.bak -e '
-s|^listen = .*|listen = /var/run/php-fcgi.sock|
-s|^user = .*|user = nginx|
-s|^group = .*|group = nginx|
-' $f
-fi
-  EOH
-end
-
-service "php-fpm" do
-  action [:enable, :start]
 end
