@@ -76,6 +76,8 @@ end
 remote_file "/usr/local/src/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
+  when "5.5.30-1"
+    checksum "888b4beb1b57d49864690407f98ff14159d757aac8013ce00a955c0bab59230a"
   when "5.5.29-2"
     checksum "1466e18edc20c13d9a6ce39290a28f0b1f9c8d5920775168aa55615eb4b59d25"
   when "5.5.28-1"
@@ -90,6 +92,8 @@ end
 remote_file "/usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-shared-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
+  when "5.5.30-1"
+    checksum "bf5b347c835cdc6f11e43bc5daf8955266038b757fa160d85623ad5cfa3d2700"
   when "5.5.29-2"
     checksum "5e9c4653edde22371c552d2e539b51d36a03fd4ecaae9009e5f5a234e5a7f6f4"
   when "5.5.28-1"
@@ -104,6 +108,8 @@ end
 remote_file "/usr/local/src/MySQL-server-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-server-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
+  when "5.5.30-1"
+    checksum "ec49d5c16ee21a77c070d81b9621d95d5a88b47f13d32bc9def0fc33cd810cd4"
   when "5.5.29-2"
     checksum "820d48b7c30125cbc7178079df82b1ceadfbe21f7e7f3d4d5f6dd6f6a7bde868"
   when "5.5.28-1"
@@ -119,6 +125,8 @@ end
 remote_file "/usr/local/src/MySQL-client-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-client-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
+  when "5.5.30-1"
+    checksum "14b5cba3d001d4ac4ebc8b0bb2a906c401a0b465a0e03b5d0550a0684e310b20"
   when "5.5.29-2"
     checksum "66f4227c751098a71a222c5b8c32bc5f834b901e5dd255b113490221755488d1"
   when "5.5.28-1"
@@ -133,6 +141,8 @@ end
 remote_file "/usr/local/src/MySQL-devel-#{rpm_version}.el6.x86_64.rpm" do
   source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-devel-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
   case rpm_version
+  when "5.5.30-1"
+    checksum "ef2f2699e71c81a178f051fe62e301dbbd8b816caa32372e279e42fab8292650"
   when "5.5.29-2"
     checksum "c82a1fd6a54ecbfc461ad899c9fa1813c41817f84074cb3623aab20dda52b182"
   when "5.5.28-1"
