@@ -24,201 +24,15 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-version = node[:mysql][:version]
-rpm_version = node[:mysql][:rpm_version]
+include_recipe "yum::remi"
+
 install_type = node[:mysql][:install_type]
 
-bash "exclude-mysql-in-yum.conf" do
-  code <<-EOH
-f=/etc/yum.conf
-mysql_excluded=`sed -ne '/^\[main\]/,/^$/{
-/^exclude=.*mysql\*/{c\
-1
-p;q}
-/^exclude=/{c\
-0
-p;q}
-}' $f`
-case $mysql_excluded in
-1) # already excluded, do nothing
-  ;;
-0) # modify exclude line
-  sed -i -e '/^\[main\]/,/^$/{
-s/exclude=.*/& mysql\*/ 
-}' $f
-  ;;
-*) # add exclude line
-  sed -i -e '/^\[main\]/,/^$/{
-/^$/i\
-exclude=mysql\*
-}' $f
-  ;;
-esac
-  EOH
-end
+package "mysql"
 
-# This cookbook assumes rpm_version >= 5.5.6
-#
-# http://dev.mysql.com/doc/refman/5.5/en/linux-installation-rpm.html
-# Before MySQL 5.5.6, MySQL-shared-compat also includes the libraries for the
-# current release, so if you install it, you should not also install
-# MySQL-shared. As of 5.5.6, MySQL-shared-compat does not include the current
-# library version, so there is no conflict.
-# 
-# As of MySQL 5.5.23, the MySQL-shared-compat RPM package enables users of Red
-# Hat-privided mysql-*-5.1 RPM packages to migrate to Oracle-provided
-# MySQL-*-5.5 packages. MySQL-shared-compat replaces the Red Hat mysql-libs
-# package by replacing libmysqlclient.so files of the latter package, thus
-# satisfying dependencies of other packages on mysql-libs. This change affects
-# only users of Red Hat (or Red Hat-compatible) RPM packages. Nothing is
-# different for users of Oracle RPM packages
-
-remote_file "/usr/local/src/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm" do
-  source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
-  case rpm_version
-  when "5.5.30-1"
-    checksum "888b4beb1b57d49864690407f98ff14159d757aac8013ce00a955c0bab59230a"
-  when "5.5.29-2"
-    checksum "1466e18edc20c13d9a6ce39290a28f0b1f9c8d5920775168aa55615eb4b59d25"
-  when "5.5.28-1"
-    checksum "99cde41f2664355535bb46eaf5b1ab5971067e2a2c6378a66c9d9c30b1ca3c6b"
-  when "5.5.27-1"
-    checksum "ee22c24f9c6a423884624adff4a982a49856c2fab610f5ec4ab9df7f90cbe6ff"
-  when "5.5.25a-1"
-    checksum "7df834438f49c16e36842bde0db6da56596c6f8d2b053ea7e6f5c57367d1974d"
-  end
-end
-
-remote_file "/usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm" do
-  source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-shared-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
-  case rpm_version
-  when "5.5.30-1"
-    checksum "bf5b347c835cdc6f11e43bc5daf8955266038b757fa160d85623ad5cfa3d2700"
-  when "5.5.29-2"
-    checksum "5e9c4653edde22371c552d2e539b51d36a03fd4ecaae9009e5f5a234e5a7f6f4"
-  when "5.5.28-1"
-    checksum "4b37baaaa44161c98a0718ea8626d4c793cbe70562f5014c5941992b8ebc6861"
-  when "5.5.27-1"
-    checksum "84badc2cadc9f8cbd691647aba58f94ab6e0cbcde4163185f166a92aa545551c"
-  when "5.5.25a-1"
-    checksum "eb80d2401b48a4139e98fc9f244374f5a0bf54f46ba6e1c7be6890fb961df969"
-  end
-end
-
-remote_file "/usr/local/src/MySQL-server-#{rpm_version}.el6.x86_64.rpm" do
-  source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-server-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
-  case rpm_version
-  when "5.5.30-1"
-    checksum "ec49d5c16ee21a77c070d81b9621d95d5a88b47f13d32bc9def0fc33cd810cd4"
-  when "5.5.29-2"
-    checksum "820d48b7c30125cbc7178079df82b1ceadfbe21f7e7f3d4d5f6dd6f6a7bde868"
-  when "5.5.28-1"
-    checksum "266279ed0aeef33e476a2a9efe989dc928bb21e6eb6971265024444da1c328e3"
-  when "5.5.27-1"
-    checksum "fe7a5be7634bd10420f81ee176ab7b53662d76a8b813b7a2f563cc207413db32"
-  when "5.5.25a-1"
-    checksum "fecbea3317e9561df99efe69e77d4b57fc75f9654a04838652c2dcfb704b4e27"
-  end
+package "mysql-server" do
+  action :install
   only_if { install_type == 'server' }
-end
-
-remote_file "/usr/local/src/MySQL-client-#{rpm_version}.el6.x86_64.rpm" do
-  source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-client-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
-  case rpm_version
-  when "5.5.30-1"
-    checksum "14b5cba3d001d4ac4ebc8b0bb2a906c401a0b465a0e03b5d0550a0684e310b20"
-  when "5.5.29-2"
-    checksum "66f4227c751098a71a222c5b8c32bc5f834b901e5dd255b113490221755488d1"
-  when "5.5.28-1"
-    checksum "4fb0261a4006f49d5e50db9509cd5232c0e4e7af7af60d69dda36f856fa2c3f0"
-  when "5.5.27-1"
-    checksum "76c13c73e29a3eccf6be008bc837b13c24a45736e4e0b7203e99140bbaa5914f"
-  when "5.5.25a-1"
-    checksum "cd29cad2b84c923b4091084b010cc14e81a847e26099904a572623863490f74e"
-  end
-end
-
-remote_file "/usr/local/src/MySQL-devel-#{rpm_version}.el6.x86_64.rpm" do
-  source "http://dev.mysql.com/get/Downloads/MySQL-#{version}/MySQL-devel-#{rpm_version}.el6.x86_64.rpm/from/http://cdn.mysql.com/"
-  case rpm_version
-  when "5.5.30-1"
-    checksum "ef2f2699e71c81a178f051fe62e301dbbd8b816caa32372e279e42fab8292650"
-  when "5.5.29-2"
-    checksum "c82a1fd6a54ecbfc461ad899c9fa1813c41817f84074cb3623aab20dda52b182"
-  when "5.5.28-1"
-    checksum "1a7e05b7f64a23b600b05afc4d3c74211477fcdfcf415476af5dd225bde13c8b"
-  when "5.5.27-1"
-    checksum "84badc2cadc9f8cbd691647aba58f94ab6e0cbcde4163185f166a92aa545551c"
-  when "5.5.25a-1"
-    checksum "408aea290ef725e9db2bf8aa46447ec78ee358f852376dedd80af46383797794"
-  end
-end
-
-# Install MySQL-shared-compat then unisntall mysql-libs.
-#
-# # rpm -q --provides MySQL-shared-compat
-# libmysqlclient.so.12()(64bit)  
-# libmysqlclient.so.14()(64bit)  
-# libmysqlclient.so.14(libmysqlclient_14)(64bit)  
-# libmysqlclient.so.15()(64bit)  
-# libmysqlclient.so.15(libmysqlclient_15)(64bit)  
-# libmysqlclient.so.16()(64bit)  
-# libmysqlclient.so.16(libmysqlclient_16)(64bit)  
-# libmysqlclient_r.so.12()(64bit)  
-# libmysqlclient_r.so.14()(64bit)  
-# libmysqlclient_r.so.14(libmysqlclient_14)(64bit)  
-# libmysqlclient_r.so.15()(64bit)  
-# libmysqlclient_r.so.15(libmysqlclient_15)(64bit)  
-# libmysqlclient_r.so.16()(64bit)  
-# libmysqlclient_r.so.16(libmysqlclient_16)(64bit)  
-# mysql-libs  
-# MySQL-shared-compat = 5.5.28-1.el6
-# MySQL-shared-compat(x86-64) = 5.5.28-1.el6
-bash "install-MySQL-shared-compat" do
-  code <<-EOH
-   rpm -i /usr/local/src/MySQL-shared-compat-#{rpm_version}.el6.x86_64.rpm
-  EOH
-  not_if 'rpm -q MySQL-shared-compat > /dev/null'
-end
-package "mysql-libs" do
-  action :remove
-  only_if 'rpm -q mysql-libs > /dev/null'
-end
-
-# We need to uninstall mysql package to avoid conflict with MySQL-* packages.
-package "mysql" do
-  action :remove
-  only_if 'rpm -q mysql > /dev/null'
-end
-
-bash "install-MySQL-shared" do
-  code <<-EOH
-    rpm -i /usr/local/src/MySQL-shared-#{rpm_version}.el6.x86_64.rpm
-  EOH
-  not_if 'rpm -q MySQL-shared > /dev/null'
-end
-
-bash "install-MySQL-server" do
-  code <<-EOH
-    if ! rpm -q MySQL-server; then
-      rpm -i /usr/local/src/MySQL-server-#{rpm_version}.el6.x86_64.rpm
-    fi
-  EOH
-  only_if { install_type == 'server' }
-end
-
-bash "install-MySQL-client" do
-  code <<-EOH
-    rpm -i /usr/local/src/MySQL-client-#{rpm_version}.el6.x86_64.rpm
-  EOH
-  not_if 'rpm -q MySQL-client > /dev/null'
-end
-
-bash "install-MySQL-devel" do
-  code <<-EOH
-    rpm -i /usr/local/src/MySQL-devel-#{rpm_version}.el6.x86_64.rpm
-  EOH
-  not_if 'rpm -q MySQL-devel > /dev/null'
 end
 
 template '/etc/my.cnf' do
@@ -255,7 +69,7 @@ bash 'mysql_install_db' do
   end
 end
 
-service 'mysql' do
+service 'mysqld' do
   supports :restart => true
   action [:enable, :start]
   only_if { install_type == 'server' }
