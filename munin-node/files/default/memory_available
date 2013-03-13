@@ -1,0 +1,60 @@
+#!/bin/sh
+# -*- sh -*-
+
+: << =cut
+
+=head1 NAME
+
+memory_available - Plugin to monitor the percent of available memory.
+
+=head1 CONFIGURATION
+
+No configuration
+
+=head1 NOTES
+
+Uses the command "memory_available"
+
+=head1 AUTHOR
+
+Hiroaki Nakamura
+
+=head1 LICENSE
+
+MIT
+
+=head1 MAGIC MARKERS
+
+ #%# family=auto
+ #%# capabilities=autoconf
+
+=cut
+
+. $MUNIN_LIBDIR/plugins/plugin.sh
+
+if [ "$1" = "autoconf" ]; then
+	if [ -x /usr/bin/free ]; then
+		echo yes
+		exit 0
+	else
+		echo no
+		exit 0
+	fi
+fi
+
+if [ "$1" = "config" ]; then
+
+	echo 'graph_title Available Memory'
+	echo 'graph_args --base 1000 -r --lower-limit 0 --upper-limit 100'
+	echo 'graph_vlabel %'
+	echo 'graph_category memory'
+	echo 'available.label available'
+	echo 'available.type GAUGE'
+	echo 'available.min 0'
+	echo 'available.max 100'
+	print_warning available
+	print_critical available
+	exit 0
+fi
+
+free | awk '$1=="Mem:"{print "available.value " ($4+$6+$7)/$2*100}'

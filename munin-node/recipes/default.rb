@@ -43,6 +43,14 @@ end
 
 package "munin-node"
 
+## memory_available plugin
+cookbook_file '/usr/share/munin/plugins/memory_available' do
+  source 'memory_available'
+  owner 'root'
+  group 'root'
+  mode '0755'
+end
+
 ## apache plugins
 
 bash 'make_apache_plugins_links' do
