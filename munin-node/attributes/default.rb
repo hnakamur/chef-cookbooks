@@ -1,11 +1,11 @@
 default.munin.gid = 403
 default.munin.uid = 403
 
-default.munin_node.enable_nginx = true
-default.munin_node.enable_apache = false
-default.munin_node.enable_mysql = false
+default['munin-node'].enable_nginx = true
+default['munin-node'].enable_apache = false
+default['munin-node'].enable_mysql = false
 
-default.munin_node.cidr_configs = [
+default['munin-node'].cidr_configs = [
   "cidr_allow 127.0.0.1/32"
 ]
 

@@ -24,9 +24,9 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-enable_apache = node[:munin_node][:enable_apache]
-enable_nginx = node[:munin_node][:enable_nginx]
-enable_mysql = node[:munin_node][:enable_mysql]
+enable_apache = node['munin-node'][:enable_apache]
+enable_nginx = node['munin-node'][:enable_nginx]
+enable_mysql = node['munin-node'][:enable_mysql]
 apache_port = node[:apache][:port]
 nginx_port = node[:nginx][:http_port]
 
@@ -148,7 +148,7 @@ template '/etc/munin/munin-node.conf' do
   group "root"
   mode '0644'
   variables(
-    :cidr_configs => node[:munin_node][:cidr_configs]
+    :cidr_configs => node['munin-node'][:cidr_configs]
   )
 end
 
