@@ -81,17 +81,15 @@ directory "/var/log/munin" do
   mode "0777"
 end
 
-# this must be done before running fcgi scripts
-#
-# This fails for munin 2.0.9-3.el3.
-# In that case, please run commands below by hand.
-#
-# service munin-node start
-# su - munin --shell=/bin/bash /usr/bin/munin-cron
-#
-# Then rerun chef-solo to do the rest of recipes.
+# We must start the munin-node service before running munin-cron to create
+# rrd files.
+include_recipe "munin-node"
+
 bash "munin-create-rrdtool-files" do
+  # Note: The munin-cron fails at the first time. It successfully creates rrd
+  # files at the second time.
   code <<-EOH
+    su - munin --shell=/bin/bash /usr/bin/munin-cron || \
     su - munin --shell=/bin/bash /usr/bin/munin-cron
   EOH
   creates "/var/lib/munin/htmlconf.storable"
