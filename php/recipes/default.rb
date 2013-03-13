@@ -24,58 +24,9 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-bash "install-remi" do
-  code <<-'EOH'
-if ! rpm -q "remi-release" > /dev/null; then
-  rpm -i http://remi-mirror.dedipower.com/enterprise/remi-release-6.rpm
-fi
-  EOH
-end
+include_recipe "yum::remi"
 
-bash "enable-remi" do
-  code <<-'EOH'
-f=/etc/yum.repos.d/remi.repo
-enabled=`sed -ne '/^\[remi\]/,/^$/{/^enabled=/{s/enabled=//;p;q}}' $f`
-if [ "$enabled" = 0 ]; then
-  sed -i.bak -e '/^\[remi\]/,/^$/s/enabled=0/enabled=1/' $f
-fi
-  EOH
-end
-
-bash "exclude-php-in-Base-repo" do
-  code <<-'EOH'
-f=/etc/yum.repos.d/CentOS-Base.repo
-php_excluded=`sed -ne '/^\[base\]/,/^$/{
-/^exclude=.*php/{c\
-1
-p;q}
-/^exclude=/{c\
-0
-p;q}
-}' $f`
-case $php_excluded in
-1) # already excluded, do nothing
-  ;;
-0) # modify exclude line
-  sed -i.bak -e '/^\[base\]/,/^$/{
-s/exclude=.*/&,php\*/
-}' $f
-  ;;
-*) # add exclude line
-  sed -i.bak -e '/^\[base\]/,/^$/{
-/^$/i\
-exclude=php*
-}' $f
-  ;;
-esac
-  EOH
-end
-
-yum_package "php" do
-  action :install
-  flush_cache [:before]
-end
-
+yum_package "php"
 yum_package "php-devel"
 yum_package "php-intl"
 yum_package "php-mbstring"
