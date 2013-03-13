@@ -104,7 +104,7 @@ end
 
 bash 'make_link_mysql_plugins' do
   code <<-EOH
-    ln -sf /usr/share/munin/plugins/mysql_* /etc/munin/plugins/
+    ln -sf /usr/share/munin/plugins/mysql_{bytes,connections,innodb,queries,slowqueries} /etc/munin/plugins/
   EOH
   only_if { enable_mysql }
 end
@@ -155,6 +155,7 @@ end
 bash 'install_munin_node_plugins' do
   code <<-EOH
     perl /usr/sbin/munin-node-configure --shell --families=contrib,auto | sh -x
+    rm -f /etc/munin/plugins/mysql_isam_space_information_schema || :
   EOH
 end
 
