@@ -24,6 +24,11 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+case node['platform']
+when "centos", "rhel"
+  include_recipe "yum::nginx"
+end
+
 hostname = `hostname`.chomp
 
 group "nginx" do
@@ -45,11 +50,7 @@ cookbook_file "/etc/yum.repos.d/nginx.repo" do
   mode "0644"
 end
 
-yum_package "nginx" do
-  action :install
-  flush_cache [ :before ]
-end
-
+yum_package "nginx"
 yum_package "httpd-tools"
 
 directory "/var/log/old/nginx" do
@@ -75,25 +76,13 @@ end
   end
 end
 
-directory "/etc/nginx/conf.d" do
-  mode "0755"
-  owner "root"
-  group "root"
-  recursive true
-end
-
-directory "/etc/nginx/default.d" do
-  mode "0755"
-  owner "root"
-  group "root"
-  recursive true
-end
-
-directory "/etc/nginx/conf" do
-  mode "0755"
-  owner "root"
-  group "root"
-  recursive true
+%w{ /etc/nginx/conf.d /etc/nginx/default.d /etc/nginx/conf }.each do |dir|
+  directory dir do
+    mode "0755"
+    owner "root"
+    group "root"
+    recursive true
+  end
 end
 
 template "/etc/nginx/nginx.conf" do
