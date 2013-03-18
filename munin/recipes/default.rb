@@ -89,6 +89,7 @@ bash "munin-create-rrdtool-files" do
   # Note: The munin-cron fails at the first time. It successfully creates rrd
   # files at the second time.
   code <<-EOH
+    /sbin/service munin-node start
     su - munin --shell=/bin/bash /usr/bin/munin-cron || \
     su - munin --shell=/bin/bash /usr/bin/munin-cron
   EOH
