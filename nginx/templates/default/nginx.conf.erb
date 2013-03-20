@@ -15,26 +15,6 @@ http {
     include       /etc/nginx/mime.types;
     default_type  application/octet-stream;
 
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for" '
-                      '"$http_x_forwarded_proto"';
-  
-    access_log  /var/log/nginx/access.log  main;
-
-    map $http_x_forwarded_proto $ssl {
-      default off;
-      https on;
-    }
-
-    access_log  /var/log/nginx/access.log  main;
-
-    sendfile        on;
-    #tcp_nopush     on;
-
-    keepalive_timeout  <%= @keepalive_timeout %>;
-
-    #gzip  on;
 <% for config in @http_configs.split("\n") %>
     <%= config %>
 <% end %>

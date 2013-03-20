@@ -1,0 +1,38 @@
+# HTTPS server
+#
+server {
+    listen       <%= @ssl_port %>;
+    server_name  <%= @ssl_server_name %>;
+
+    ssl                  on;
+    ssl_certificate      <%= @crt_file %>;
+    ssl_certificate_key  <%= @key_file %>;
+
+    ssl_session_timeout  5m;
+
+    ssl_protocols  SSLv2 SSLv3 TLSv1;
+    ssl_ciphers  HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers   on;
+
+    location / {
+        root   /var/www/html/_default/htdocs;
+        index  index.html index.htm;
+    
+        satisfy any;
+        auth_basic_user_file /var/www/html/_default/.htpasswd;
+        auth_basic "Authentication Required";
+        include conf/allow_common_ip.conf;
+        deny all;
+    }
+    
+    #error_page  404              /404.html;
+    
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    include /etc/nginx/ssl.d/*.conf;
+}

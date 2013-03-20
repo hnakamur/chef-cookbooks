@@ -1,18 +1,36 @@
-default.nginx.http_port = 81
+default.nginx.http_port = 80
+default.nginx.ssl_port = 443
+default.nginx.ssl_server_name = "_"
+default.nginx.crt_file = "/etc/pki/tls/certs/localhost.crt"
+default.nginx.key_file = "/etc/pki/tls/private/localhost.key"
 default.nginx.gid = 400
 default.nginx.uid = 400
 default.nginx.worker_processes = 4
 default.nginx.worker_connections = 1024
-default.nginx.keepalive_timeout = 65
 default.nginx.http_configs = <<'EOS'
-server_tokens off;
+log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                  '$status $body_bytes_sent "$http_referer" '
+                  '"$http_user_agent" "$http_x_forwarded_for" "$scheme"';
 
+map $scheme $ssl {
+  default off;
+  https on;
+}
+
+access_log  /var/log/nginx/access.log  main;
+
+sendfile        on;
+#tcp_nopush     on;
+
+keepalive_timeout  65;
+server_tokens off;
 gzip  on;
 
 server_names_hash_bucket_size 64;
 
 client_max_body_size    100m;
 client_body_buffer_size 128k;
+
 proxy_set_header        Host $host;
 proxy_set_header        X-Forwared-For $proxy_add_x_forwarded_for;
 proxy_set_header        X-Protocol $http_x_protocol;

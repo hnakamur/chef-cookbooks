@@ -76,7 +76,7 @@ end
   end
 end
 
-%w{ /etc/nginx/conf.d /etc/nginx/default.d /etc/nginx/conf }.each do |dir|
+%w{ /etc/nginx/conf.d /etc/nginx/default.d /etc/nginx/ssl.d /etc/nginx/conf }.each do |dir|
   directory dir do
     mode "0755"
     owner "root"
@@ -108,6 +108,20 @@ template "/etc/nginx/conf.d/default.conf" do
   not_if { FileTest.exists?("/root/.chef/nginx/nginx.default.conf.written") }
 end
 directory "/root/.chef/nginx/nginx.default.conf.written" do
+  recursive true
+end
+
+template "/etc/nginx/conf.d/ssl.conf" do
+  source "ssl.conf.erb"
+  variables(
+    :ssl_port => node[:nginx][:ssl_port],
+    :ssl_server_name => node[:nginx][:ssl_server_name],
+    :crt_file => node[:nginx][:crt_file],
+    :key_file => node[:nginx][:key_file]
+  )
+  not_if { FileTest.exists?("/root/.chef/nginx/ssl.conf.written") }
+end
+directory "/root/.chef/nginx/ssl.conf.written" do
   recursive true
 end
 
