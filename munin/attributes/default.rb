@@ -1,5 +1,6 @@
 default.munin.gid = 403
 default.munin.uid = 403
+default.munin.nginx_munin_conf_dir = "/etc/nginx/ssl.d"
 default.munin.web_interface_login = "munin"
 default.munin.web_interface_password = "_set_password_in_node.json_"
 

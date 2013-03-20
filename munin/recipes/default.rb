@@ -103,7 +103,7 @@ cookbook_file "/etc/cron.d/munin" do
   mode "0644"
 end
 
-cookbook_file "/etc/nginx/default.d/munin.conf" do
+cookbook_file "#{node.munin.nginx_munin_conf_dir}/munin.conf" do
   source "nginx.munin.conf"
   owner "root"
   group "root"
