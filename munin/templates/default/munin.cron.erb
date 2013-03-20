@@ -4,4 +4,5 @@
 
 MAILTO=root
 
-*/<%= @update_rate_in_minutes %> * * * *     munin test -x /usr/bin/munin-cron && /usr/bin/munin-cron
+
+<%= node['munin']['crontab_minute_field'] %> * * * *     munin test -x /usr/bin/munin-cron && /usr/bin/munin-cron

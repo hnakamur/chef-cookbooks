@@ -37,8 +37,9 @@ end
 user 'munin' do
   uid node[:munin][:uid]
   gid 'munin'
+  home '/var/lib/munin'
   shell '/sbin/nologin'
-  comment 'Munin networked resource monitoring tool'
+  comment 'Munin user'
 end
 
 package "munin-node"
@@ -74,17 +75,8 @@ cookbook_file '/etc/nginx/default.d/nginx_status.conf' do
   owner 'root'
   group 'root'
   mode '0644'
+  notifies :reload, 'service[nginx]'
   only_if { enable_nginx }
-end
-bash 'reload_nginx_for_nginx_status' do
-  code <<-EOH
-    service nginx reload &&
-    mkdir -p /root/.chef/munin_node/nginx_reloaded
-  EOH
-  only_if do
-    enable_nginx &&
-    !FileTest.exist?("/root/.chef/munin_node/nginx_reloaded")
-  end
 end
 bash 'make_nginx_plugins_links' do
   code <<-EOH
@@ -120,7 +112,7 @@ bash 'remove_mysql_plugins_links' do
   code <<-EOH
     rm -f /etc/munin/plugins/mysql_*
   EOH
-  not_if { enable_nginx }
+  not_if { enable_mysql }
 end
 
 bash 'create_munin_user_in_mysql' do

@@ -94,10 +94,8 @@ html_strategy cgi
 # the services must be defined in the Nagios server as well.
 #contact.nagios.command /usr/bin/send_nsca nagios.host.comm -c /etc/nsca.conf
 
-# Update data at every minute
-update_rate <%= @update_rate_in_minutes %>m
-# Keep data <%= @data_retention_period_in_days %> days (= <%= @data_retention_period_in_days %> * 24 * 60)
-graph_data_size custom <%= @data_retention_period_in_days.to_i * 24 * 60 %>
+update_rate <%= node['munin']['update_rate'] %>
+graph_data_size <%= @graph_data_size %>
 
 # a simple host tree
 #[buildvm-10.phx2.fedoraproject.org]

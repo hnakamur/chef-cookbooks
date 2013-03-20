@@ -29,16 +29,9 @@ password = node.munin.web_interface_password
 
 include_recipe "nginx"
 
-group "munin" do
-  gid node[:munin][:gid]
-end
-
-user "munin" do
-  uid node[:munin][:uid]
-  gid "munin"
-  shell "/sbin/nologin"
-  comment "Munin networked resource monitoring tool"
-end
+# We must start the munin-node service before running munin-cron to create
+# rrd files.
+include_recipe "munin-node"
 
 yum_package "munin"
 yum_package "munin-cgi"
@@ -70,8 +63,7 @@ template "/etc/munin/munin.conf" do
   group "root"
   mode "0644"
   variables(
-    :update_rate_in_minutes => node[:munin][:update_rate_in_minutes],
-    :data_retention_period_in_days => node[:munin][:data_retention_period_in_days],
+    :graph_data_size => node[:munin][:graph_data_size],
     :host_tree_configs => node[:munin][:host_tree_configs]
   )
 end
@@ -83,10 +75,6 @@ directory "/var/log/munin" do
   group "munin"
   mode "0777"
 end
-
-# We must start the munin-node service before running munin-cron to create
-# rrd files.
-include_recipe "munin-node"
 
 bash "munin-create-rrdtool-files" do
   # Note: The munin-cron fails at the first time. It successfully creates rrd
@@ -104,9 +92,6 @@ template "/etc/cron.d/munin" do
   owner "root"
   group "root"
   mode "0644"
-  variables(
-    :update_rate_in_minutes => node[:munin][:update_rate_in_minutes]
-  )
 end
 
 cookbook_file "#{node.munin.nginx_munin_conf_dir}/munin.conf" do

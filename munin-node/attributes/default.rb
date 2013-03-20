@@ -9,7 +9,7 @@ default['munin-node'].cidr_configs = [
   "cidr_allow 127.0.0.1/32"
 ]
 
-default.nginx.http_port = 81
+default.nginx.http_port = 80
 default.apache.port = 8001
 
 # open port 4949 in iptables if munin server is running on a remote machine.
