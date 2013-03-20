@@ -27,6 +27,8 @@
 login = node.munin.web_interface_login
 password = node.munin.web_interface_password
 
+include_recipe "nginx"
+
 group "munin" do
   gid node[:munin][:gid]
 end
@@ -108,9 +110,7 @@ cookbook_file "#{node.munin.nginx_munin_conf_dir}/munin.conf" do
   owner "root"
   group "root"
   mode "0644"
-end
-service "nginx" do
-  action [:reload]
+  notifies :reload, 'service[nginx]'
 end
 
 cookbook_file "/etc/init.d/munin-fcgi-html" do
