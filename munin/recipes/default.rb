@@ -70,6 +70,7 @@ template "/etc/munin/munin.conf" do
   group "root"
   mode "0644"
   variables(
+    :update_rate_in_minutes => node[:munin][:update_rate_in_minutes],
     :data_retention_period_in_days => node[:munin][:data_retention_period_in_days],
     :host_tree_configs => node[:munin][:host_tree_configs]
   )
@@ -98,11 +99,14 @@ bash "munin-create-rrdtool-files" do
   creates "/var/lib/munin/htmlconf.storable"
 end
 
-cookbook_file "/etc/cron.d/munin" do
-  source "munin.cron"
+template "/etc/cron.d/munin" do
+  source "munin.cron.erb"
   owner "root"
   group "root"
   mode "0644"
+  variables(
+    :update_rate_in_minutes => node[:munin][:update_rate_in_minutes]
+  )
 end
 
 cookbook_file "#{node.munin.nginx_munin_conf_dir}/munin.conf" do

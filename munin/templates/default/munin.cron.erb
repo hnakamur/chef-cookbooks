@@ -1,0 +1,7 @@
+#
+# cron-jobs for munin
+#
+
+MAILTO=root
+
+*/<%= @update_rate_in_minutes %> * * * *     munin test -x /usr/bin/munin-cron && /usr/bin/munin-cron
